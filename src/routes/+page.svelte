@@ -2,6 +2,7 @@
     import { Avatar } from "flowbite-svelte"
     import { onMount } from "svelte"
     import { base } from "$app/paths"
+    import Particles from "$lib/components/Particles.svelte"
 
     interface GitHubProject {
         id: number;
@@ -48,6 +49,7 @@
     };
 </script>
 
+<Particles/>
 <main class="w-full flex flex-col items-center justify-center gap-6 sm:gap-8 md:gap-10 py-10 sm:py-16 md:py-20 px-4 sm:px-6">
 
     <div class="absolute inset-0 overflow-hidden">
