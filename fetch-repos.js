@@ -1,5 +1,7 @@
 // fetch-repos.js
 import { writeFileSync } from "fs";
+import { config } from "dotenv";
+config();
 
 const githubUsername = "TheBigZZZ";
 
@@ -12,9 +14,14 @@ const contributedRepos = [
 ];
 
 async function githubFetch(url) {
+    const token = process.env.VITE_GITHUB_TOKEN;
+    if (!token) throw new Error("VITE_GITHUB_TOKEN is not set!");
+    
     const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${process.env.VITE_GITHUB_TOKEN}` }
+        headers: { Authorization: `Bearer ${token}` }
     });
+
+    if (!res.ok) throw new Error(`GitHub API error: ${res.status} on ${url}`);
     return res.json();
 }
 
