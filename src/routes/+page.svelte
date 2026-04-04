@@ -48,16 +48,16 @@
     ];
 
     const skillGradients: Record<string, string> = {
-        "TypeScript":   "#3178c640",
-        "Python":       "#3572A540",
-        "Svelte":       "#ff3e0040",
-        "Tauri":        "#ffc13140",
-        "HTML":         "#e34c2640",
-        "Tailwind CSS": "#38bdf840",
-        "Git":          "#f1502f40",
+        "TypeScript":   "#3178c6",
+        "Python":       "#3572A5",
+        "Svelte":       "#ff3e00",
+        "Tauri":        "#ffc131",
+        "HTML":         "#e34c26",
+        "Tailwind CSS": "#38bdf8",
+        "Git":          "#f1502f",
     };
 
-    const getSkillGradient = (name: string) => skillGradients[name] ?? "#ffffff15";
+    const getSkillGradient = (name: string) => skillGradients[name] ?? "#ffffff";
 
     const experiences = [
         {
@@ -155,12 +155,22 @@
         <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-4 sm:gap-6">
             {#each skills as lang (lang.name)}
                 <div class="flex flex-col items-center gap-3 group cursor-default">
-                    <div class="w-16 sm:w-20 h-16 sm:h-20 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                        style="background: radial-gradient(circle at 30% 30%, {getSkillGradient(lang.name)}, transparent 70%)">
-                        <img src="{base}/{lang.image}" alt={lang.name} class="w-10 sm:w-12 h-10 sm:h-12 object-contain drop-shadow-lg" />
+                    <div class="relative w-16 sm:w-20 h-16 sm:h-20 rounded-2xl"
+                        style="background: radial-gradient(circle at 30% 30%, {getSkillGradient(lang.name)}40, transparent 70%)">
+                        
+                        <!-- Spinning border layer (sits behind via z-index) -->
+                        <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0 skill-border"
+                            style="--skill-color: {getSkillGradient(lang.name)}">
+                        </div>
+
+                        <!-- Inner fill that reveals 2px border gap -->
+                        <div class="absolute inset-[2px] rounded-[14px] z-10 flex items-center justify-center"
+                            style="background: radial-gradient(circle at 30% 30%, {getSkillGradient(lang.name)}30, #0a0a0a 70%)">
+                            <img src="{base}/{lang.image}" alt={lang.name} class="w-10 sm:w-12 h-10 sm:h-12 object-contain drop-shadow-lg relative z-10" />
+                        </div>
                     </div>
-                    <p class="text-gray-400 group-hover:text-white transition-colors text-xs sm:text-sm text-center font-medium">{lang.name}</p>
-                </div>
+    <p class="text-gray-400 group-hover:text-white transition-colors text-xs sm:text-sm text-center font-medium">{lang.name}</p>
+</div>
             {/each}
         </div>
     </section>
@@ -395,3 +405,31 @@
     </footer>
 
 </main>
+
+
+<style>
+    .skill-border {
+        background: conic-gradient(
+            from var(--angle, 0deg),
+            var(--skill-color),
+            transparent 40%,
+            var(--skill-color) 60%,
+            transparent
+        );
+        animation: none;
+    }
+
+    .group:hover .skill-border {
+        animation: spin-border 2s linear infinite;
+    }
+
+    @property --angle {
+        syntax: "<angle>";
+        inherits: false;
+        initial-value: 0deg;
+    }
+
+    @keyframes spin-border {
+        to { --angle: 360deg; }
+    }
+</style>
