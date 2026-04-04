@@ -36,7 +36,7 @@
     ];
 
     const contributedRepos = [
-        "FaizeenHoq/FlintLauncher",
+        "FaizeenHoque/FlintLauncher",
     ];
     
     const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN; // store this in .env ideally
