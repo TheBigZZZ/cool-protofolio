@@ -44,8 +44,13 @@
             fetch(`https://api.github.com/repos/${fullName}`),
             fetch(`https://api.github.com/repos/${fullName}/contributors?per_page=5`)
         ]);
+
         const repo = await repoRes.json();
-        const contributors = await contribRes.json();
+        const contribData = await contribRes.json();
+
+        // Make sure contributors is always an array, never undefined
+        const contributors = Array.isArray(contribData) ? contribData : [];
+
         return { ...repo, contributors };
     }
 
