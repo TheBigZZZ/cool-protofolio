@@ -40,6 +40,7 @@
     ];
     
     const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN; // store this in .env ideally
+    console.log("Token:", GITHUB_TOKEN); // temporarily log the full token to confirm it loads
 
     async function githubFetch(url: string) {
         return fetch(url, {
