@@ -24,27 +24,39 @@
     let projects: GitHubProject[] = $state([]);
     let loading: boolean = $state(true);
 
-    // Replace with your GitHub username
     const githubUsername = "TheBigZZZ";
 
-// ✏️ Add or remove repo names here to control what shows on your site
+    // ✏️ Your own repos you want to show
     const pinnedRepos = [
-        "FlintLauncher",
         "CLI-Monopoly",
+    ];
+
+    // ✏️ Add any external repos you contributed to (owner/repo-name format)
+    const contributedRepos = [
+        "FaizeenHoque/FlintLauncher",  // replace with actual owner/repo
     ];
 
     onMount(async () => {
         try {
-            const response = await fetch(
+            // Fetch your own repos
+            const ownResponse = await fetch(
                 `https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=100`
             );
-            const allRepos: GitHubProject[] = await response.json();
+            const allOwnRepos: GitHubProject[] = await ownResponse.json();
 
-            // Filter to only the repos you want, and preserve your chosen order
-            projects = pinnedRepos
-                .map(name => allRepos.find(r => r.name === name))
+            const ownProjects = pinnedRepos
+                .map(name => allOwnRepos.find(r => r.name === name))
                 .filter((r): r is GitHubProject => r !== undefined);
 
+            // Fetch each contributed repo individually
+            const contributedProjects = await Promise.all(
+                contributedRepos.map(async (fullName) => {
+                    const res = await fetch(`https://api.github.com/repos/${fullName}`);
+                    return res.json() as Promise<GitHubProject>;
+                })
+            );
+
+            projects = [...ownProjects, ...contributedProjects];
             loading = false;
         } catch (error) {
             console.error("Failed to fetch GitHub projects:", error);
