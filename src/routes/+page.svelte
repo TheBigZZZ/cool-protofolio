@@ -18,14 +18,14 @@
     }
 
     const languages = [
-        { name: "TypeScript", image: "images/languages/typescript.svg", color: "blue-500"},
-        { name: "Python", image: "images/languages/python.svg", color: "yellow-400"},
-        { name: "Svelte", image: "images/languages/svelte-og.svg", color: "red-500"},
-        { name: "Tauri", image: "images/languages/tauri.svg", color: "yellow-700"},
-        { name: "HTML", image: "images/languages/html.svg", color: "orange-400"},
-        { name: "Tailwind CSS", image: "images/languages/tailwind.svg", color: "blue-700" },
-        { name: "Git", image: "images/languages/git.svg", color: "red-700" },
-    ];
+    { name: "TypeScript", image: "images/languages/typescript.svg", shadowClass: "drop-shadow-blue-500"},
+    { name: "Python", image: "images/languages/python.svg", shadowClass: "drop-shadow-yellow-400"},
+    { name: "Svelte", image: "images/languages/svelte-og.svg", shadowClass: "drop-shadow-red-500"},
+    { name: "Tauri", image: "images/languages/tauri.svg", shadowClass: "drop-shadow-yellow-700"},
+    { name: "HTML", image: "images/languages/html.svg", shadowClass: "drop-shadow-orange-400"},
+    { name: "Tailwind CSS", image: "images/languages/tailwind.svg", shadowClass: "drop-shadow-blue-700" },
+    { name: "Git", image: "images/languages/git.svg", shadowClass: "drop-shadow-red-700" },
+];
 
     let projects: GitHubProject[] = $state([]);
     let loading: boolean = $state(true);
@@ -71,7 +71,7 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
             {#each languages as lang (lang.name)}
                 <div class="flex flex-col items-center gap-2">
-                    <div class="w-16 sm:w-20 h-16 sm:h-20 rounded-lg flex items-center justify-center transition-all duration-400 linear bg-transparent drop-shadow-{lang.color} drop-shadow-2xl">
+                    <div class="w-16 sm:w-20 h-16 sm:h-20 rounded-lg flex items-center justify-center transition-all duration-400 linear bg-transparent {lang.shadowClass} drop-shadow-2xl">
                         <img src={lang.image} alt={lang.name} class="w-12 sm:w-16 h-12 sm:h-16 object-contain" />
                     </div>
                     <p class="text-white font-bold antialiased text-xs sm:text-sm text-center">{lang.name}</p>
