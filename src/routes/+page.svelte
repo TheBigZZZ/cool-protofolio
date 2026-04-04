@@ -25,12 +25,26 @@
     let loading: boolean = $state(true);
 
     // Replace with your GitHub username
-    const githubUsername = "TheBigZZZ"; // Change this to your GitHub username
+    const githubUsername = "TheBigZZZ";
+
+// ✏️ Add or remove repo names here to control what shows on your site
+    const pinnedRepos = [
+        "Flint-Launcher",
+        "CLI-Monopoly",
+    ];
 
     onMount(async () => {
         try {
-            const response = await fetch(`https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=6`);
-            projects = await response.json();
+            const response = await fetch(
+                `https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=100`
+            );
+            const allRepos: GitHubProject[] = await response.json();
+
+            // Filter to only the repos you want, and preserve your chosen order
+            projects = pinnedRepos
+                .map(name => allRepos.find(r => r.name === name))
+                .filter((r): r is GitHubProject => r !== undefined);
+
             loading = false;
         } catch (error) {
             console.error("Failed to fetch GitHub projects:", error);
