@@ -32,6 +32,13 @@
         "Lua":        { bg: "#000080", text: "#fff", accent: "#00008020" },
     };
 
+
+    const scrollToContact = () => {
+        const el = document.getElementById('contact');
+        console.log('found element:', el);
+        el?.scrollIntoView({ behavior: 'smooth' });
+    };
+
     const getLanguageStyle = (lang: string | null) => {
         if (!lang) return { bg: "#555", text: "#fff", accent: "#55555520" };
         return languageColors[lang] ?? { bg: "#8b5cf6", text: "#fff", accent: "#8b5cf620" };
@@ -62,24 +69,17 @@
     const experiences = [
         {
             title: "Flint Launcher",
-            role: "Lead Developer",
-            period: "2024 — Present",
+            role: "Frontend Developer",
+            period: "2026 — Present",
             description: "Building a Minecraft launcher using Tauri v2, SvelteKit, TypeScript and Rust. Handles Mojang auth, parallel downloads, auto-updater and more.",
             tags: ["Tauri", "Svelte", "Rust", "TypeScript"],
         },
         {
-            title: "Mounts of Mayhem",
-            role: "Server Owner & Developer",
-            period: "2023 — Present",
-            description: "Running a Fabric Minecraft server with custom mods, anticheat, and optimizations. Managing infrastructure, permissions and player experience.",
-            tags: ["Minecraft", "Server Admin", "Fabric"],
-        },
-        {
-            title: "Roblox Game Dev",
-            role: "Indie Developer",
-            period: "2022 — Present",
-            description: "Developed a Piggy-inspired Roblox game with AI pathfinding, ragdoll mechanics, cinematic menus, voting systems and Discord webhook integration.",
-            tags: ["Lua", "Roblox Studio", "AI"],
+            title: "CLI Monopoly",
+            role: "Lead Developer",
+            period: "2025 - 2026 (Discontinued)",
+            description: "Created the popular board game Monopoly, which you can play in the CLI. Discontinued for my own sake and higher persue",
+            tags: ["Python", "Game", "CLI"],
         },
     ];
 
@@ -117,7 +117,7 @@
 
 <Particles />
 
-<main class="w-full flex flex-col items-center justify-center gap-20 sm:gap-28 py-10 sm:py-16 md:py-20 px-4 sm:px-6 overflow-x-hidden">
+<main class="w-full flex flex-col items-center justify-center gap-20 sm:gap-28 py-10 sm:py-16 md:py-20 px-4 sm:px-6">
 
     <!-- Background decorative blocks -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -142,10 +142,9 @@
                class="px-5 py-2 rounded-full border border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-black transition-all text-sm font-semibold">
                 GitHub
             </a>
-            <a href="mailto:{contactDetails.email}"
-               class="px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-400 transition-all text-sm font-semibold">
-                Contact Me
-            </a>
+            <button onclick={scrollToContact} class="px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-400 transition-all text-sm font-semibold">
+    Contact Me
+            </button>
         </div>
     </section>
 
@@ -177,31 +176,30 @@
 
     <!-- ===== ABOUT ME ===== -->
     <section class="w-full max-w-4xl relative z-10">
-        <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">About Me</h2>
+        <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">About Mee</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div class="flex flex-col gap-5">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl">🇧🇩</span>
-                    <span class="text-white font-semibold text-lg">Dhaka, Bangladesh · 16 years old</span>
+                    <span class="text-white font-semibold text-lg"><span class="text-green-600 font-semibold">Bangladesh</span> · 16 years old</span>
                 </div>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
-                    I'm probably the most enthusiastic person you'll ever meet when it comes to frontend and web development.
-                    I have big ambitions, love learning new tech, and enjoy collaborating on cool projects.
+                    I'm probably the most enthusiastic person , chalant and joyful person you'll ever meet when it comes to Frontend, Web development, Techy stuff and other things lol.
+                    Big ambitions, love learning new tech, and enjoy collaborating on Cool Projects! :D
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
-                    I started out learning JavaScript and TypeScript, then dove deep into React, Next.js, SvelteKit and Tauri.
-                    Right now I'm also picking up Rust while building <span class="text-pink-400 font-semibold">Flint Launcher</span> — a full-featured Minecraft launcher.
+                    I started out learning <span class="text-yellow-400 font-semibold">Python</span>, then took a taste for HTML, CSS and JavaScript, then switched to <span class="text-blue-400 font-semibold">Typescript</span>. Then dove deep into <span class="text-cyan-400 font-semibold">React</span>, <span class="text-red-400 font-semibold">Svelte</span> and Tauri.
+                    Right now I'm making switching from React to Svelte while helping build <span class="text-pink-400 font-semibold">Flint Launcher</span> — a compact and fast Minecraft launcher built on Tauri.
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
-                    Outside of code I run a Minecraft server, play Rocket League, and have a deep interest in Islamic topics and South Asian culture.
+                    Outside of code, I like to play Rocket League, and have a deep interest in <span class="text-white font-semibold">Islamic Topics</span> :>.
                 </p>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 {#each [
-                    { label: "Projects Built", value: "10+" },
-                    { label: "Languages", value: "7+" },
+                    { label: "Projects Built", value: "Just 2 :(" },
+                    { label: "Languages", value: "5+" },
                     { label: "GitHub Stars", value: "⭐" },
-                    { label: "Years Coding", value: "3+" },
+                    { label: "Years Coding", value: "Since 13" },
                 ] as stat (stat.label)}
                     <div class="bg-neutral-800/60 border border-neutral-700 rounded-xl p-5 flex flex-col items-center gap-1 hover:border-pink-400 transition-all">
                         <span class="text-pink-400 font-bold text-3xl">{stat.value}</span>
@@ -334,13 +332,13 @@
     </section>
 
     <!-- ===== CONTACT ===== -->
-    <section class="w-full max-w-2xl relative z-10">
-        <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-4">Get in Touch</h2>
-        <p class="text-gray-400 text-center mb-10">Have a project in mind or just want to say hi? Send me a message.</p>
+    <section id="contact" class="w-full max-w-2xl relative z-10">
+        <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-4">Contact Me</h2>
+        <p class="text-gray-400 text-center mb-10">Say hi to me or smthinggggg</p>
 
         {#if contactSent}
             <div class="bg-pink-500/10 border border-pink-400 rounded-xl p-8 text-center">
-                <p class="text-pink-400 font-semibold text-lg">Message sent! I'll get back to you soon 🎉</p>
+                <p class="text-pink-400 font-semibold text-lg">Message Sent! I rarely check emails sooo gl :D</p>
             </div>
         {:else}
             <form onsubmit={handleContact} class="flex flex-col gap-4 bg-neutral-800/60 border border-neutral-700 rounded-xl p-6 sm:p-8">
@@ -408,6 +406,10 @@
 
 
 <style>
+
+    :global(html) {
+            scroll-behavior: smooth;
+        }
     .skill-border {
         background: conic-gradient(
             from var(--angle, 0deg),
