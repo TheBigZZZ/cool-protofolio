@@ -166,7 +166,7 @@
 
         <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
             <a href="mailto:{contactDetails.email}" class="text-gray-300 hover:text-pink-400 transition-colors text-sm sm:text-base">
-                📧 {contactDetails.email}
+                📧 {contactDetails.email} <!--Test-->
             </a>
         </div>
 
