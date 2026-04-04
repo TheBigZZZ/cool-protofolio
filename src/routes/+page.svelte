@@ -29,7 +29,7 @@
 
 // ✏️ Add or remove repo names here to control what shows on your site
     const pinnedRepos = [
-        "Flint-Launcher",
+        "FlintLauncher",
         "CLI-Monopoly",
     ];
 
