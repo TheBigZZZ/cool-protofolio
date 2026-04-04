@@ -88,7 +88,7 @@
         
         {#if loading}
             <div class="text-white text-center py-10">Loading projects...</div>
-        {:else if projects && projects.length > 0}
+        {:else if projects && projects.length > 0} <!--Test-->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
                 {#each projects as project (project.id)}
                     <a href={project.html_url} target="_blank" rel="noreferrer" class="group">
