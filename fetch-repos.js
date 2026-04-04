@@ -11,11 +11,9 @@ const contributedRepos = [
     "FaizeenHoque/FlintLauncher", // your friend's repo
 ];
 
-const token = process.env.VITE_GITHUB_TOKEN;
-
 async function githubFetch(url) {
     const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${import.meta.env.VITE_GITHUB_TOKEN}` }
     });
     return res.json();
 }
