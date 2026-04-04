@@ -1,8 +1,23 @@
 <script lang="ts">
     import { Avatar } from "flowbite-svelte"
     import { onMount } from "svelte"
+    import { base } from "$app/paths"
 
-    const languages= [
+    interface GitHubProject {
+        id: number;
+        name: string;
+        description: string | null;
+        html_url: string;
+        language: string | null;
+        stargazers_count: number;
+        owner: {
+            login: string;
+            avatar_url: string;
+        };
+        contributors?: { login: string; avatar_url: string }[];
+    }
+
+    const languages = [
         { name: "TypeScript", image: "images/languages/typescript.svg", color: "blue-500"},
         { name: "Python", image: "images/languages/python.svg", color: "yellow-400"},
         { name: "Svelte", image: "images/languages/svelte-og.svg", color: "red-500"},
@@ -15,84 +30,14 @@
     let projects: GitHubProject[] = $state([]);
     let loading: boolean = $state(true);
 
-    interface GitHubProject {
-    id: number;
-    name: string;
-    description: string | null;
-    html_url: string;
-    language: string | null;
-    stargazers_count: number;
-    owner: {
-        login: string;
-        avatar_url: string;
-    };
-    contributors?: { login: string; avatar_url: string }[];
-}
-
-    const githubUsername = "TheBigZZZ";
-
-    const pinnedRepos = [
-        "CLI-Monopoly",
-    ];
-
-    const contributedRepos = [
-        "FaizeenHoque/FlintLauncher",
-    ];
-    
-    const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN; // store this in .env ideally
-    console.log("Token:", GITHUB_TOKEN); // temporarily log the full token to confirm it loads
-
-    async function githubFetch(url: string) {
-        return fetch(url, {
-            headers: {
-                Authorization: `Bearer ${GITHUB_TOKEN}`,
-            }
-        });
-    }
-
-    async function fetchRepoWithContributors(fullName: string): Promise<GitHubProject> {
-        const [repoRes, contribRes] = await Promise.all([
-            githubFetch(`https://api.github.com/repos/${fullName}`),
-            githubFetch(`https://api.github.com/repos/${fullName}/contributors?per_page=5`)
-        ]);
-
-        const repo = await repoRes.json();
-        const contribData = await contribRes.json();
-
-        // Make sure contributors is always an array, never undefined
-        const contributors = Array.isArray(contribData) ? contribData : [];
-
-        return { ...repo, contributors };
-    }
-
-    
-
     onMount(async () => {
         try {
-            const ownResponse = await githubFetch(
-                `https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=100`
-            );
-            const ownData = await ownResponse.json();
-
-            // Guard: make sure it's an array before calling .find()
-            const allOwnRepos: GitHubProject[] = Array.isArray(ownData) ? ownData : [];
-
-            const ownFiltered = pinnedRepos
-                .map(name => allOwnRepos.find(r => r.name === name))
-                .filter((r): r is GitHubProject => r !== undefined);
-
-            const ownProjects = await Promise.all(
-                ownFiltered.map(r => fetchRepoWithContributors(`${r.owner.login}/${r.name}`))
-            );
-
-            const contributedProjects = await Promise.all(
-                contributedRepos.map(fullName => fetchRepoWithContributors(fullName))
-            );
-
-            projects = [...ownProjects, ...contributedProjects];
+            const res = await fetch(`${base}/repos.json`);
+            const data = await res.json();
+            projects = Array.isArray(data) ? data : [];
             loading = false;
         } catch (error) {
-            console.error("Failed to fetch GitHub projects:", error);
+            console.error("Failed to load projects:", error);
             loading = false;
         }
     });
@@ -144,71 +89,71 @@
     <!-- Projects Section -->
     <div class="flex flex-col items-center justify-center gap-4 sm:gap-8 w-full max-w-xs sm:max-w-md md:max-w-4xl relative z-10 mt-8">
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl antialiased">My Projects</h2>
-        
+
         {#if loading}
             <div class="text-white text-center py-10">Loading projects...</div>
-        {:else if projects && projects.length > 0} <!--Test-->
+        {:else if projects && projects.length > 0}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
                 {#each projects as project (project.id)}
                     <a href={project.html_url} target="_blank" rel="noreferrer" class="group">
-        <div class="bg-neutral-800 border border-neutral-500 rounded-lg p-4 sm:p-6 hover:border-pink-400 transition-all duration-300 h-full flex flex-col">
-            
-            <!-- Repo name + owner avatar in corner -->
-            <div class="flex items-start justify-between mb-2">
-                <h3 class="text-white font-bold font-open-sans text-shadow-lg/30 text-base sm:text-lg group-hover:text-pink-500 transition-colors truncate">
-                    {project.name}
-                </h3>
-                <!-- Owner avatar in top-right corner -->
-                {#if project.owner?.avatar_url}
-                    <img
-                            src={project.owner.avatar_url}
-                            alt={project.owner.login}
-                            title={project.owner.login}
-                            class="w-7 h-7 rounded-full border border-neutral-600 ml-2 flex-shrink-0"
-                        />
-                {/if}
-            </div>
+                        <div class="bg-neutral-800 border border-neutral-500 rounded-lg p-4 sm:p-6 hover:border-pink-400 transition-all duration-300 h-full flex flex-col">
 
-            <p class="text-gray-400 text-sm font-open-sans sm:text-base mb-4 grow line-clamp-2">
-                {project.description || "No description"}
-            </p>
-
-            <!-- Bottom row: language, stars, contributor avatars -->
-            <div class="flex items-center justify-between mt-auto">
-                <div class="flex gap-3 items-center text-xs sm:text-sm">
-                    {#if project.language}
-                        <span class="text-white bg-neutral-900 bg-opacity-30 px-2 py-1 rounded">
-                            {project.language}
-                        </span>
-                    {/if}
-                    <span class="text-yellow-500">✨ {project.stargazers_count}</span>
-                </div>
-
-                <!-- Contributor avatars stacked -->
-                {#if project.contributors && project.contributors.length > 0}
-                    <div class="flex -space-x-2">
-                        {#each project.contributors.slice(0, 4) as contributor (contributor.login)}
-                            {#if contributor.avatar_url}
-                                <img
-                                    src={contributor.avatar_url}
-                                    alt={contributor.login}
-                                    title={contributor.login}
-                                    class="w-6 h-6 rounded-full border-2 border-neutral-800"
-                                />
-                            {/if}
-                        {/each}
-                        {#if project.contributors.length > 4}
-                            <div class="w-6 h-6 rounded-full border-2 border-neutral-800 bg-neutral-700 flex items-center justify-center">
-                                <span class="text-white text-xs">+{project.contributors.length - 4}</span>
+                            <!-- Repo name + owner avatar in corner -->
+                            <div class="flex items-start justify-between mb-2">
+                                <h3 class="text-white font-bold font-open-sans text-shadow-lg/30 text-base sm:text-lg group-hover:text-pink-500 transition-colors truncate">
+                                    {project.name}
+                                </h3>
+                                <!-- Owner avatar in top-right corner -->
+                                {#if project.owner?.avatar_url}
+                                    <img
+                                        src={project.owner.avatar_url}
+                                        alt={project.owner.login}
+                                        title={project.owner.login}
+                                        class="w-7 h-7 rounded-full border border-neutral-600 ml-2 flex-shrink-0"
+                                    />
+                                {/if}
                             </div>
-                        {/if}
-                    </div>
-                {/if}
-            </div>
 
-        </div>
-    </a>
-{/each}
+                            <p class="text-gray-400 text-sm font-open-sans sm:text-base mb-4 grow line-clamp-2">
+                                {project.description || "No description"}
+                            </p>
+
+                            <!-- Bottom row: language, stars, contributor avatars -->
+                            <div class="flex items-center justify-between mt-auto">
+                                <div class="flex gap-3 items-center text-xs sm:text-sm">
+                                    {#if project.language}
+                                        <span class="text-white bg-neutral-900 bg-opacity-30 px-2 py-1 rounded">
+                                            {project.language}
+                                        </span>
+                                    {/if}
+                                    <span class="text-yellow-500">✨ {project.stargazers_count}</span>
+                                </div>
+
+                                <!-- Contributor avatars stacked -->
+                                {#if project.contributors && project.contributors.length > 0}
+                                    <div class="flex -space-x-2">
+                                        {#each project.contributors.slice(0, 4) as contributor (contributor.login)}
+                                            {#if contributor.avatar_url}
+                                                <img
+                                                    src={contributor.avatar_url}
+                                                    alt={contributor.login}
+                                                    title={contributor.login}
+                                                    class="w-6 h-6 rounded-full border-2 border-neutral-800"
+                                                />
+                                            {/if}
+                                        {/each}
+                                        {#if project.contributors.length > 4}
+                                            <div class="w-6 h-6 rounded-full border-2 border-neutral-800 bg-neutral-700 flex items-center justify-center">
+                                                <span class="text-white text-xs">+{project.contributors.length - 4}</span>
+                                            </div>
+                                        {/if}
+                                    </div>
+                                {/if}
+                            </div>
+
+                        </div>
+                    </a>
+                {/each}
             </div>
         {:else}
             <div class="text-gray-400 text-center py-10">No projects found</div>
@@ -218,7 +163,7 @@
     <!-- Footer Section -->
     <div class="flex flex-col items-center justify-center gap-6 sm:gap-8 w-full mt-16 sm:mt-20 border-t border-gray-700 pt-10 sm:pt-16 relative z-10">
         <h3 class="text-white font-medium text-xl sm:text-2xl md:text-3xl antialiased">Get in Touch</h3>
-        
+
         <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center">
             <a href="mailto:{contactDetails.email}" class="text-gray-300 hover:text-pink-400 transition-colors text-sm sm:text-base">
                 📧 {contactDetails.email}
