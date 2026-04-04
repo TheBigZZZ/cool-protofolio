@@ -13,7 +13,7 @@ const contributedRepos = [
 
 async function githubFetch(url) {
     const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${import.meta.env.VITE_GITHUB_TOKEN}` }
+        headers: { Authorization: `Bearer ${process.env.VITE_GITHUB_TOKEN}` }
     });
     return res.json();
 }

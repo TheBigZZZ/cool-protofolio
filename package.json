@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"prebuild": "node fetch-repos.js",
 		"build": "vite build",
 		"deploy": "npx gh-pages -d build",
 		"preview": "vite preview",
