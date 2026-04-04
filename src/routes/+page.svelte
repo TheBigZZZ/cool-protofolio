@@ -38,11 +38,21 @@
     const contributedRepos = [
         "FaizeenHoq/FlintLauncher",
     ];
+    
+    const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN; // store this in .env ideally
+
+    async function githubFetch(url: string) {
+        return fetch(url, {
+            headers: {
+                Authorization: `Bearer ${GITHUB_TOKEN}`,
+            }
+        });
+    }
 
     async function fetchRepoWithContributors(fullName: string): Promise<GitHubProject> {
         const [repoRes, contribRes] = await Promise.all([
-            fetch(`https://api.github.com/repos/${fullName}`),
-            fetch(`https://api.github.com/repos/${fullName}/contributors?per_page=5`)
+            githubFetch(`https://api.github.com/repos/${fullName}`),
+            githubFetch(`https://api.github.com/repos/${fullName}/contributors?per_page=5`)
         ]);
 
         const repo = await repoRes.json();
@@ -54,18 +64,22 @@
         return { ...repo, contributors };
     }
 
+    
+
     onMount(async () => {
         try {
-            const ownResponse = await fetch(
+            const ownResponse = await githubFetch(
                 `https://api.github.com/users/${githubUsername}/repos?sort=updated&per_page=100`
             );
-            const allOwnRepos: GitHubProject[] = await ownResponse.json();
+            const ownData = await ownResponse.json();
+
+            // Guard: make sure it's an array before calling .find()
+            const allOwnRepos: GitHubProject[] = Array.isArray(ownData) ? ownData : [];
 
             const ownFiltered = pinnedRepos
                 .map(name => allOwnRepos.find(r => r.name === name))
                 .filter((r): r is GitHubProject => r !== undefined);
 
-            // Fetch contributors for own repos too
             const ownProjects = await Promise.all(
                 ownFiltered.map(r => fetchRepoWithContributors(`${r.owner.login}/${r.name}`))
             );
@@ -144,12 +158,14 @@
                     {project.name}
                 </h3>
                 <!-- Owner avatar in top-right corner -->
-                <img
-                    src={project.owner.avatar_url}
-                    alt={project.owner.login}
-                    title={project.owner.login}
-                    class="w-7 h-7 rounded-full border border-neutral-600 ml-2 flex-shrink-0"
-                />
+                {#if project.owner?.avatar_url}
+                    <img
+                            src={project.owner.avatar_url}
+                            alt={project.owner.login}
+                            title={project.owner.login}
+                            class="w-7 h-7 rounded-full border border-neutral-600 ml-2 flex-shrink-0"
+                        />
+                {/if}
             </div>
 
             <p class="text-gray-400 text-sm font-open-sans sm:text-base mb-4 grow line-clamp-2">
@@ -171,12 +187,14 @@
                 {#if project.contributors && project.contributors.length > 0}
                     <div class="flex -space-x-2">
                         {#each project.contributors.slice(0, 4) as contributor (contributor.login)}
-                            <img
-                                src={contributor.avatar_url}
-                                alt={contributor.login}
-                                title={contributor.login}
-                                class="w-6 h-6 rounded-full border-2 border-neutral-800"
-                            />
+                            {#if contributor.avatar_url}
+                                <img
+                                    src={contributor.avatar_url}
+                                    alt={contributor.login}
+                                    title={contributor.login}
+                                    class="w-6 h-6 rounded-full border-2 border-neutral-800"
+                                />
+                            {/if}
                         {/each}
                         {#if project.contributors.length > 4}
                             <div class="w-6 h-6 rounded-full border-2 border-neutral-800 bg-neutral-700 flex items-center justify-center">
