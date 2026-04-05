@@ -203,9 +203,6 @@
                     phraseIndex = (phraseIndex + 1) % phrases.length;
                 }
             }
-
-
-
             
             setTimeout(typeLoop, isDeleting ? 40 : 70);
         };
@@ -397,8 +394,8 @@
                     { label: "Stars", value: githubStats.stars },
                 ] as stat (stat.label)}
                     <div class="flex flex-col items-center">
-                        <span class="text-white font-bold text-xl">{stat.value}</span>
-                        <span class="text-gray-500 text-xs">{stat.label}</span>
+                        <span class="text-white font-bold text-3xl">{stat.value}</span>
+                        <span class="text-pink-300 font-sans text-xs">{stat.label}</span>
                     </div>
                 {/each}
             </div>
@@ -433,7 +430,7 @@
 
         <div class="skills-wrapper">
             <div class="skills-track">
-                {#each [...skills, ...skills] as lang, i (`skill-${i}`)}
+                {#each [...skills, ...skills, ...skills, ...skills] as lang, i (`skill-${i}`)}
                     <div class="skill-item group">
                         <div class="relative w-16 h-16">
                             <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 skill-border"
@@ -523,7 +520,7 @@
                                 <h3 class="text-white font-bold text-xl group-hover:text-pink-50 transition-colors">{exp.title}</h3>
                                 <span class="text-pink-400 text-sm font-medium tracking-wide">{exp.role}</span>
                             </div>
-                            <p class="text-gray-500 group-hover:text-gray-300 text-sm sm:text-base leading-relaxed transition-colors duration-300">{exp.description}</p>
+                            <p class="text-gray-200 group-hover:text-gray-300 text-sm sm:text-base leading-relaxed transition-colors duration-300">{exp.description}</p>
                             <div class="flex flex-wrap gap-2 mt-1">
                                 {#each exp.tags as tag (tag.name)}
                                     {#if tag.image}
@@ -630,63 +627,120 @@
     <section
         id="contact"
         bind:this={sectionEls[5]}
-        class="w-full max-w-2xl relative z-10 fade-section"
+        class="w-full max-w-3xl relative z-10 fade-section"
         class:visible={visibleSections.has(5)}>
-        <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-4">Contact Me</h2>
-        <p class="text-gray-400 text-center mb-10">Say hi to me or smthinggggg</p>
+
+        <div class="text-center mb-12">
+            <h2 class="text-white font-bold text-2xl sm:text-4xl md:text-5xl mb-3">Get in Touch</h2>
+            <p class="text-white font-sans text-sm sm:text-base">Say hi or somethingggg</p>
+        </div>
+
         {#if contactSent}
-            <div class="bg-pink-500/10 border border-pink-400 rounded-xl p-8 text-center">
-                <p class="text-pink-400 font-semibold text-lg">Message Sent! I rarely check emails sooo gl :D</p>
+            <div class="relative overflow-hidden rounded-2xl p-8 text-center border border-pink-500/30"
+                style="background: linear-gradient(135deg, rgba(236,72,153,0.08), rgba(168,85,247,0.05))">
+                <div class="text-4xl mb-3">🎉</div>
+                <p class="text-white font-bold text-xl mb-1">Message sent!</p>
+                <p class="text-gray-400 text-sm">I rarely check emails sooo gl :D</p>
             </div>
         {:else}
-            <form onsubmit={handleContact} class="flex flex-col gap-4 bg-neutral-800/60 border border-neutral-700 rounded-xl p-6 sm:p-8">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-gray-400 text-sm" for="name">Name</label>
-                        <input id="name" type="text" bind:value={contactName} placeholder="Your name" required
-                            class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors" />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-gray-400 text-sm" for="email">Email</label>
-                        <input id="email" type="email" bind:value={contactEmail} placeholder="your@email.com" required
-                            class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors" />
-                    </div>
+            <div class="relative overflow-hidden rounded-2xl border border-neutral-800/80"
+                style="background: linear-gradient(135deg, rgba(236,72,153,0.04), rgba(168,85,247,0.03), rgba(0,0,0,0.4))">
+
+                <!-- Top accent line -->
+                <div class="absolute top-0 left-0 right-0 h-px"
+                    style="background: linear-gradient(90deg, transparent, rgba(236,72,153,0.5), rgba(168,85,247,0.5), transparent)">
                 </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-gray-400 text-sm" for="message">Message</label>
-                    <textarea id="message" bind:value={contactMessage} placeholder="What's on your mind?" required rows="5"
-                        class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors resize-none"></textarea>
-                </div>
-                <button type="submit"
-                    onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
-                    class="mt-2 px-6 py-3 bg-pink-500 hover:bg-pink-400 text-white font-semibold rounded-lg transition-all duration-200 self-end">
-                    Send Message →
-                </button>
-            </form>
+
+                <form onsubmit={handleContact} class="p-6 sm:p-10 flex flex-col gap-5">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-gray-500 text-xs font-semibold uppercase tracking-widest" for="name">Name</label>
+                            <input
+                                id="name"
+                                type="text"
+                                bind:value={contactName}
+                                placeholder="Zunayed Ibrahim"
+                                required
+                                class="contact-input bg-neutral-900/60 border border-neutral-800 focus:border-pink-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-all duration-300 placeholder-neutral-600"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <label class="text-gray-500 text-xs font-semibold uppercase tracking-widest" for="email">Email</label>
+                            <input
+                                id="email"
+                                type="email"
+                                bind:value={contactEmail}
+                                placeholder="you@example.com"
+                                required
+                                class="contact-input bg-neutral-900/60 border border-neutral-800 focus:border-pink-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-all duration-300 placeholder-neutral-600"
+                            />
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <label class="text-gray-500 text-xs font-semibold uppercase tracking-widest" for="message">Message</label>
+                        <textarea
+                            id="message"
+                            bind:value={contactMessage}
+                            placeholder="Type something"
+                            required
+                            rows="5"
+                            class="contact-input bg-neutral-900/60 border border-neutral-800 focus:border-pink-500/50 rounded-xl px-4 py-3 text-white text-sm outline-none transition-all duration-300 resize-none placeholder-neutral-600"
+                        ></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 mt-2">
+                        <p class="text-white font-sans text-xs">I rarely check emails soooo gl</p>
+                        <button
+                            type="submit"
+                            onmousemove={onMagneticMove}
+                            onmouseleave={onMagneticLeave}
+                            class="relative overflow-hidden px-8 py-3 rounded-xl text-white font-semibold text-sm transition-all duration-300 send-btn">
+                            <span class="relative z-10">Send Message →</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
         {/if}
     </section>
 
     <!-- ===== FOOTER ===== -->
-    <footer class="flex flex-col items-center justify-center gap-4 w-full border-t border-neutral-800 pt-10 relative z-10">
-        <div class="flex gap-4 items-center flex-wrap justify-center">
-            <button onclick={copyEmail}
-                onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
-                class="flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-700 hover:border-pink-400 text-gray-400 hover:text-pink-400 transition-all text-sm">
-                {#if emailCopied}
-                    <span class="text-green-400">✓ Copied!</span>
-                {:else}
-                    📧 {contactDetails.email}
-                {/if}
-            </button>
-            <a href={contactDetails.github} target="_blank" rel="noreferrer" aria-label="GitHub"
-                onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
-                class="text-gray-400 hover:text-white transition-colors">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-            </a>
+    <footer class="w-full relative z-10 mt-10">
+        <!-- Top divider -->
+        <div class="h-px w-full" style="background: linear-gradient(90deg, transparent, rgba(236,72,153,0.3), rgba(168,85,247,0.3), bg-transparent)"></div>
+
+        <div class="flex flex-col items-center gap-6 py-10 px-4">
+
+            <!-- Name + tagline -->
+            <div class="flex flex-col items-center gap-1">
+                <span class="gradient-name font-bold text-xl">Zunayed Ibrahim</span>
+            </div>
+
+            <!-- Links -->
+            <div class="flex items-center gap-3">
+                <button onclick={copyEmail}
+                    class="flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-800 hover:border-pink-500/40 text-gray-500 hover:text-pink-400 transition-all text-xs font-medium">
+                    {#if emailCopied}
+                        <span class="text-green-400">☑️ Copied!</span>
+                    {:else}
+                        📧 Copy Email
+                    {/if}
+                </button>
+
+                <a href={contactDetails.github} target="_blank" rel="noreferrer"
+                    class="flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-800 hover:border-neutral-600 text-gray-500 hover:text-white transition-all text-xs font-medium">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+
+            <!-- Bottom -->
+            <div class="flex flex-col items-center gap-1">
+                <p class="text-pink-500  font-sans font-bold text-xs">© 2026 Zunayed Ibrahim. All rights reserved.</p>
+            </div>
         </div>
-        <p class="text-gray-600 text-xs">© 2026 Zunayed Ibrahim. All rights reserved.</p>
     </footer>
 
 </main>
@@ -792,5 +846,32 @@
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .contact-input:focus {
+    box-shadow: 0 0 0 1px rgba(236, 72, 153, 0.2), 0 0 20px rgba(236, 72, 153, 0.05);
+    }
+
+    .send-btn {
+        background: linear-gradient(135deg, #ec4899, #a855f7);
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+    }
+
+    .send-btn:hover {
+        box-shadow: 0 0 30px rgba(236, 72, 153, 0.5);
+        transform: translateY(-1px);
+    }
+
+    .send-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, #f472b6, #c084fc);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .send-btn:hover::before {
+        opacity: 1;
     }
 </style>

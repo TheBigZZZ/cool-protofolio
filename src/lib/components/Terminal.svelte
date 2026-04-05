@@ -41,9 +41,8 @@
             description: "Learn about me",
             action: () => [
                 '<span class="text-pink-400 font-bold">Zunayed Ibrahim</span>',
-                "16 year old frontend developer from 🇧🇩 Bangladesh",
-                "Building cool stuff with Svelte, Tauri, TypeScript & Rust",
-                "Currently working on Flint Launcher — a fast Minecraft launcher",
+                "16 year old frontend developer from Bangladesh",
+                "Building & actively learning cool stuff ",
             ],
             html: true,
         },
@@ -51,10 +50,9 @@
             description: "See my tech stack",
             action: () => [
                 '<span class="text-pink-400 font-bold">Tech Stack:</span>',
-                '  <span class="text-blue-400">Languages:</span>  TypeScript, Python, Rust, Lua',
-                '  <span class="text-red-400">Frontend:</span>   Svelte, React, HTML, Tailwind CSS',
-                '  <span class="text-yellow-400">Tools:</span>     Tauri, Git, Vite, Node.js',
-                '  <span class="text-green-400">Backend:</span>   Supabase, Formspree',
+                '  <span class="text-blue-400">Languages:</span>  TypeScript, Python',
+                '  <span class="text-red-400">Frontend:</span>   Tauri, Svelte, HTML, Tailwind CSS',
+                '  <span class="text-yellow-400">Tools:</span>  Git',
             ],
             html: true,
         },
@@ -116,36 +114,23 @@
             description: "Show current date and time",
             action: () => new Date().toLocaleString("en-BD", { timeZone: "Asia/Dhaka" }) + " (Dhaka time)",
         },
-        joke: {
-            description: "Get a dev joke",
-            action: () => {
-                const jokes = [
-                    "Why do programmers prefer dark mode? Because light attracts bugs.",
-                    "A SQL query walks into a bar, walks up to two tables and asks... 'Can I join you?'",
-                    "Why do Java developers wear glasses? Because they don't C#.",
-                    "How many programmers does it take to change a light bulb? None, that's a hardware problem.",
-                    "I would tell you a UDP joke but you might not get it.",
-                    "Why did the developer quit? Because he didn't get arrays.",
-                ];
-                return jokes[Math.floor(Math.random() * jokes.length)];
-            },
-        },
+
         age: {
             description: "How old am I?",
             action: () => {
-                const born = new Date("2009-01-01");
+                const born = new Date("17/3/2010");
                 const now = new Date();
                 const years = Math.floor((now.getTime() - born.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-                return `${years} years old 🇧🇩`;
+                return `${years} years old`;
             },
         },
         sudo: {
             description: "Try your luck",
-            action: () => "Nice try. You don't have sudo access here 😄",
+            action: () => "lol nice try",
         },
         rm: {
             description: "...",
-            action: () => "rm: cannot remove '/': Permission denied 💀",
+            action: () => "what you tryna remove lil vro",
         },
         exit: {
             description: "Close the terminal",
@@ -153,7 +138,7 @@
                 setTimeout(() => {
                     showTerminal = false;
                 }, 300);
-                return "Goodbye! 👋";
+                return "Goodbye!";
             },
         },
     };
