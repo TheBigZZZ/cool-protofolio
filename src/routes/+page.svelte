@@ -18,6 +18,12 @@
         contributors?: { login: string; avatar_url: string }[];
     }
 
+    interface GitHubStats {
+        followers: number;
+        public_repos: number;
+        stars: number;
+    }
+
     const languageColors: Record<string, { bg: string; text: string; accent: string }> = {
         "TypeScript":    { bg: "#3178c6", text: "#fff", accent: "#3178c620" },
         "JavaScript":    { bg: "#f7df1e", text: "#000", accent: "#f7df1e20" },
@@ -43,20 +49,25 @@
     };
 
     const navItems = [
-        { label: "Skills",      id: "skills" },
-        { label: "About",       id: "about" },
-        { label: "Experience",  id: "experience" },
-        { label: "Projects",    id: "projects" },
-        { label: "Contact",     id: "contact" },
+        { label: "Skills",     id: "skills" },
+        { label: "About",      id: "about" },
+        { label: "Experience", id: "experience" },
+        { label: "Projects",   id: "projects" },
+        { label: "Contact",    id: "contact" },
     ];
 
     let activeSection = $state("skills");
     let emailCopied = $state(false);
 
+    // Batch 4 — GitHub stats
+    let githubStats = $state<GitHubStats | null>(null);
+
+    // Batch 3 — tilt state per card
+    let tiltCards: Map<number, { rotateX: number; rotateY: number }> = $state(new Map());
+
     const scrollTo = (id: string) => {
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     };
-
     const scrollToContact = () => scrollTo("contact");
 
     const copyEmail = async () => {
@@ -68,6 +79,36 @@
     const getLanguageStyle = (lang: string | null) => {
         if (!lang) return { bg: "#555", text: "#fff", accent: "#55555520" };
         return languageColors[lang] ?? { bg: "#8b5cf6", text: "#fff", accent: "#8b5cf620" };
+    };
+
+    // Batch 3 — tilt handlers
+    const onCardMouseMove = (e: MouseEvent, id: number) => {
+        const el = (e.currentTarget as HTMLElement);
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const rotateX = ((y - cy) / cy) * -8;
+        const rotateY = ((x - cx) / cx) * 8;
+        tiltCards = new Map(tiltCards.set(id, { rotateX, rotateY }));
+    };
+
+    const onCardMouseLeave = (id: number) => {
+        tiltCards = new Map(tiltCards.set(id, { rotateX: 0, rotateY: 0 }));
+    };
+
+    // Batch 3 — magnetic button
+    const onMagneticMove = (e: MouseEvent) => {
+        const el = e.currentTarget as HTMLElement;
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX - rect.left - rect.width / 2;
+        const y = e.clientY - rect.top - rect.height / 2;
+        el.style.transform = `translate(${x * 0.25}px, ${y * 0.25}px)`;
+    };
+    const onMagneticLeave = (e: MouseEvent) => {
+        const el = e.currentTarget as HTMLElement;
+        el.style.transform = `translate(0, 0)`;
     };
 
     const skills = [
@@ -118,12 +159,13 @@
         },
     ];
 
-    // Typewriter
     const phrases = [
-        "Passionate front-end dev 🎨",
-        "Building cool stuff with Svelte ⚡",
-        "Minecraft launcher dev 🚀",
-        "Always learning new tech 🧠",
+        "Hiiiii, am Zuz",
+        "Passionate front-end dev :D",
+        "Tech is so cool",
+        "I like cool stuff!1!!!",
+        "Rocket league is goated",
+        "🐣🐣🐣🐣🐣",
     ];
     let displayText = $state("");
     let isDeleting = $state(false);
@@ -131,7 +173,6 @@
     let charIndex = $state(0);
     let showCursor = $state(true);
 
-    // Scroll fade-in
     let sectionEls: (HTMLElement | null)[] = $state([null, null, null, null, null]);
     let visibleSections = $state(new Set<number>());
 
@@ -166,10 +207,9 @@
         };
         setTimeout(typeLoop, 500);
 
-        // Cursor blink
         const blinkInterval = setInterval(() => showCursor = !showCursor, 530);
 
-        // Scroll fade-in
+        // Fade-in observer
         const fadeObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 const idx = sectionEls.indexOf(entry.target as HTMLElement);
@@ -179,25 +219,22 @@
             });
         }, { threshold: 0.15 });
 
-        // Active nav section observer
+        // Active nav scroll
         const onScroll = () => {
-        const scrollY = window.scrollY + window.innerHeight * 0.3;
-        let current = navItems[0].id;
-        for (const { id } of navItems) {
-            const el = document.getElementById(id);
-            if (el && el.offsetTop <= scrollY) {
-                current = id;
+            const scrollY = window.scrollY + window.innerHeight * 0.3;
+            let current = navItems[0].id;
+            for (const { id } of navItems) {
+                const el = document.getElementById(id);
+                if (el && el.offsetTop <= scrollY) current = id;
             }
-        }
-        activeSection = current;
-    };
+            activeSection = current;
+        };
+        window.addEventListener("scroll", onScroll);
+        onScroll();
 
-    window.addEventListener("scroll", onScroll);
-    onScroll();
-
-    setTimeout(() => {
-        sectionEls.forEach(el => el && fadeObserver.observe(el));
-    }, 100);
+        setTimeout(() => {
+            sectionEls.forEach(el => el && fadeObserver.observe(el));
+        }, 100);
 
         // Fetch repos
         try {
@@ -210,10 +247,28 @@
             loading = false;
         }
 
+        // Batch 4 — Fetch GitHub stats
+        try {
+            const userRes = await fetch("https://api.github.com/users/TheBigZZZ");
+            const userData = await userRes.json();
+            const reposRes = await fetch("https://api.github.com/users/TheBigZZZ/repos?per_page=100");
+            const reposData = await reposRes.json();
+            const totalStars = Array.isArray(reposData)
+                ? reposData.reduce((sum: number, r: any) => sum + r.stargazers_count, 0)
+                : 0;
+            githubStats = {
+                followers: userData.followers,
+                public_repos: userData.public_repos,
+                stars: totalStars,
+            };
+        } catch (e) {
+            console.error("Failed to fetch GitHub stats", e);
+        }
+
         return () => {
             clearInterval(blinkInterval);
             fadeObserver.disconnect();
-            navObserver.disconnect();
+            window.removeEventListener("scroll", onScroll);
         };
     });
 
@@ -239,7 +294,9 @@
     {#each navItems as item (item.id)}
         <button
             onclick={() => scrollTo(item.id)}
-            class="relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 {activeSection === item.id ? 'text-white' : 'text-gray-400 hover:text-white'}">
+            onmousemove={onMagneticMove}
+            onmouseleave={onMagneticLeave}
+            class="relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 {activeSection === item.id ? 'text-white' : 'text-gray-400 hover:text-white'}">
             {#if activeSection === item.id}
                 <span class="absolute inset-0 rounded-full bg-pink-500/20 border border-pink-500/40"></span>
             {/if}
@@ -247,6 +304,9 @@
         </button>
     {/each}
 </nav>
+
+<!-- Batch 3 — Animated mesh gradient background -->
+<div class="fixed inset-0 z-0 pointer-events-none mesh-bg"></div>
 
 <Particles />
 
@@ -268,21 +328,39 @@
     <section class="flex flex-col items-center gap-6 relative z-10 text-center pt-16">
         <Avatar src="images/coolpfp-modified.webp" class="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 bg-transparent drop-shadow-2xl drop-shadow-pink-400 mb-4" />
         <h1 class="gradient-name font-bold text-3xl sm:text-5xl md:text-6xl tracking-tight">
-            Zunayed Ibrahim
+            Zuzo
         </h1>
         <p class="text-gray-300 text-lg sm:text-xl md:text-2xl font-medium min-h-8">
             {displayText}<span class="text-pink-400" style="opacity: {showCursor ? 1 : 0}">|</span>
         </p>
         <div class="flex gap-4 mt-2 mb-5">
             <a href={contactDetails.github} target="_blank" rel="noreferrer"
+               onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
                class="px-5 py-2 rounded-full border border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-black transition-all text-sm font-semibold">
                 GitHub
             </a>
             <button onclick={scrollToContact}
+                onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
                 class="px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-400 transition-all text-sm font-semibold">
                 Contact Me
             </button>
         </div>
+
+        <!-- Batch 4 — GitHub stats row -->
+        {#if githubStats}
+            <div class="flex gap-6 mt-2">
+                {#each [
+                    { label: "Followers", value: githubStats.followers },
+                    { label: "Repos", value: githubStats.public_repos },
+                    { label: "Stars", value: githubStats.stars },
+                ] as stat (stat.label)}
+                    <div class="flex flex-col items-center">
+                        <span class="text-white font-bold text-xl">{stat.value}</span>
+                        <span class="text-gray-500 text-xs">{stat.label}</span>
+                    </div>
+                {/each}
+            </div>
+        {/if}
     </section>
 
     <!-- ===== CURRENTLY BUILDING BANNER ===== -->
@@ -355,7 +433,7 @@
                 {#each [
                     { label: "Projects Built", value: "Just 2 :(" },
                     { label: "Languages", value: "5+" },
-                    { label: "GitHub Stars", value: "⭐" },
+                    { label: "GitHub Stars", value: githubStats ? `⭐ ${githubStats.stars}` : "⭐" },
                     { label: "Years Coding", value: "Since 13" },
                 ] as stat (stat.label)}
                     <div class="bg-neutral-800/60 border border-neutral-700 rounded-xl p-5 flex flex-col items-center gap-1 hover:border-pink-400 transition-all">
@@ -420,8 +498,13 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
                 {#each projects as project (project.id)}
                     {@const langStyle = getLanguageStyle(project.language)}
-                    <a href={project.html_url} target="_blank" rel="noreferrer" class="group">
-                        <div class="relative rounded-2xl overflow-hidden border border-neutral-700/60 hover:border-pink-400/60 transition-all duration-300 h-full flex flex-col bg-neutral-900/80 backdrop-blur-sm shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1">
+                    {@const tilt = tiltCards.get(project.id) ?? { rotateX: 0, rotateY: 0 }}
+                    <a href={project.html_url} target="_blank" rel="noreferrer" class="group"
+                        onmousemove={(e) => onCardMouseMove(e, project.id)}
+                        onmouseleave={() => onCardMouseLeave(project.id)}
+                        style="perspective: 800px; display: block;">
+                        <div class="relative rounded-2xl overflow-hidden border border-neutral-700/60 hover:border-pink-400/60 transition-all duration-300 h-full flex flex-col bg-neutral-900/80 backdrop-blur-sm shadow-xl hover:shadow-pink-500/10"
+                            style="transform: rotateX({tilt.rotateX}deg) rotateY({tilt.rotateY}deg); transition: transform 0.15s ease;">
                             <div class="relative h-24 w-full flex-shrink-0 overflow-hidden"
                                 style="background: linear-gradient(135deg, {langStyle.bg}40 0%, {langStyle.bg}10 60%, transparent 100%)">
                                 <div class="absolute inset-0 opacity-10"
@@ -485,9 +568,9 @@
     <!-- ===== CONTACT ===== -->
     <section
         id="contact"
-        bind:this={sectionEls[4]}
+        bind:this={sectionEls[5]}
         class="w-full max-w-2xl relative z-10 fade-section"
-        class:visible={visibleSections.has(4)}>
+        class:visible={visibleSections.has(5)}>
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-4">Contact Me</h2>
         <p class="text-gray-400 text-center mb-10">Say hi to me or smthinggggg</p>
         {#if contactSent}
@@ -514,6 +597,7 @@
                         class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors resize-none"></textarea>
                 </div>
                 <button type="submit"
+                    onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
                     class="mt-2 px-6 py-3 bg-pink-500 hover:bg-pink-400 text-white font-semibold rounded-lg transition-all duration-200 self-end">
                     Send Message →
                 </button>
@@ -524,8 +608,8 @@
     <!-- ===== FOOTER ===== -->
     <footer class="flex flex-col items-center justify-center gap-4 w-full border-t border-neutral-800 pt-10 relative z-10">
         <div class="flex gap-4 items-center flex-wrap justify-center">
-            <!-- Copy email button -->
             <button onclick={copyEmail}
+                onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
                 class="flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-700 hover:border-pink-400 text-gray-400 hover:text-pink-400 transition-all text-sm">
                 {#if emailCopied}
                     <span class="text-green-400">✓ Copied!</span>
@@ -533,7 +617,9 @@
                     📧 {contactDetails.email}
                 {/if}
             </button>
-            <a href={contactDetails.github} target="_blank" rel="noreferrer" aria-label="GitHub" class="text-gray-400 hover:text-white transition-colors">
+            <a href={contactDetails.github} target="_blank" rel="noreferrer" aria-label="GitHub"
+                onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
+                class="text-gray-400 hover:text-white transition-colors">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                 </svg>
@@ -545,6 +631,21 @@
 </main>
 
 <style>
+    /* Batch 3 — animated mesh gradient */
+    .mesh-bg {
+        background:
+            radial-gradient(ellipse 80% 60% at 20% 20%, rgba(236,72,153,0.07) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 80% at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 50% at 50% 50%, rgba(236,72,153,0.04) 0%, transparent 70%);
+        animation: mesh-shift 12s ease-in-out infinite alternate;
+    }
+
+    @keyframes mesh-shift {
+        0%   { background-position: 0% 0%, 100% 100%, 50% 50%; }
+        50%  { background-position: 30% 60%, 70% 30%, 80% 20%; }
+        100% { background-position: 60% 20%, 40% 80%, 20% 70%; }
+    }
+
     .gradient-name {
         background: linear-gradient(90deg, #fff 0%, #f9a8d4 30%, #ec4899 50%, #f9a8d4 70%, #fff 100%);
         background-size: 200% auto;
