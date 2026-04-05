@@ -38,15 +38,31 @@
         "Fabric":        { bg: "#c4a35a", text: "#000", accent: "#c4a35a20" },
         "Roblox Studio": { bg: "#e2231a", text: "#fff", accent: "#e2231a20" },
         "AI":            { bg: "#06b6d4", text: "#000", accent: "#06b6d420" },
-        "Game": { bg: "#f59e0b", text: "#000", accent: "#f59e0b20" },
-        "CLI":  { bg: "#22c55e", text: "#000", accent: "#22c55e20" },
+        "Game":          { bg: "#f59e0b", text: "#000", accent: "#f59e0b20" },
+        "CLI":           { bg: "#22c55e", text: "#000", accent: "#22c55e20" },
     };
 
+    const navItems = [
+        { label: "Skills",      id: "skills" },
+        { label: "About",       id: "about" },
+        { label: "Experience",  id: "experience" },
+        { label: "Projects",    id: "projects" },
+        { label: "Contact",     id: "contact" },
+    ];
 
-    const scrollToContact = () => {
-        const el = document.getElementById('contact');
-        console.log('found element:', el);
-        el?.scrollIntoView({ behavior: 'smooth' });
+    let activeSection = $state("skills");
+    let emailCopied = $state(false);
+
+    const scrollTo = (id: string) => {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    const scrollToContact = () => scrollTo("contact");
+
+    const copyEmail = async () => {
+        await navigator.clipboard.writeText("sirtv490@gmail.com");
+        emailCopied = true;
+        setTimeout(() => emailCopied = false, 2000);
     };
 
     const getLanguageStyle = (lang: string | null) => {
@@ -55,13 +71,13 @@
     };
 
     const skills = [
-        { name: "TypeScript", image: "images/languages/typescript.svg", shadowClass: "drop-shadow-blue-500" },
-        { name: "Python",     image: "images/languages/python.svg",     shadowClass: "drop-shadow-yellow-400" },
-        { name: "Svelte",     image: "images/languages/svelte-og.svg",  shadowClass: "drop-shadow-red-500" },
-        { name: "Tauri",      image: "images/languages/tauri.svg",      shadowClass: "drop-shadow-yellow-700" },
-        { name: "HTML",       image: "images/languages/html.svg",       shadowClass: "drop-shadow-orange-400" },
-        { name: "Tailwind CSS", image: "images/languages/tailwind.svg", shadowClass: "drop-shadow-blue-700" },
-        { name: "Git",        image: "images/languages/git.svg",        shadowClass: "drop-shadow-red-700" },
+        { name: "TypeScript",   image: "images/languages/typescript.svg" },
+        { name: "Python",       image: "images/languages/python.svg" },
+        { name: "Svelte",       image: "images/languages/svelte-og.svg" },
+        { name: "Tauri",        image: "images/languages/tauri.svg" },
+        { name: "HTML",         image: "images/languages/html.svg" },
+        { name: "Tailwind CSS", image: "images/languages/tailwind.svg" },
+        { name: "Git",          image: "images/languages/git.svg" },
     ];
 
     const skillGradients: Record<string, string> = {
@@ -102,14 +118,88 @@
         },
     ];
 
+    // Typewriter
+    const phrases = [
+        "Passionate front-end dev 🎨",
+        "Building cool stuff with Svelte ⚡",
+        "Minecraft launcher dev 🚀",
+        "Always learning new tech 🧠",
+    ];
+    let displayText = $state("");
+    let isDeleting = $state(false);
+    let phraseIndex = $state(0);
+    let charIndex = $state(0);
+    let showCursor = $state(true);
+
+    // Scroll fade-in
+    let sectionEls: (HTMLElement | null)[] = $state([null, null, null, null, null]);
+    let visibleSections = $state(new Set<number>());
+
     let projects: GitHubProject[] = $state([]);
-    let loading: boolean = $state(true);
+    let loading = $state(true);
     let contactName = $state("");
     let contactEmail = $state("");
     let contactMessage = $state("");
     let contactSent = $state(false);
 
     onMount(async () => {
+        // Typewriter
+        const typeLoop = () => {
+            const current = phrases[phraseIndex];
+            if (!isDeleting) {
+                displayText = current.slice(0, charIndex + 1);
+                charIndex++;
+                if (charIndex === current.length) {
+                    isDeleting = true;
+                    setTimeout(typeLoop, 1800);
+                    return;
+                }
+            } else {
+                displayText = current.slice(0, charIndex - 1);
+                charIndex--;
+                if (charIndex === 0) {
+                    isDeleting = false;
+                    phraseIndex = (phraseIndex + 1) % phrases.length;
+                }
+            }
+            setTimeout(typeLoop, isDeleting ? 40 : 70);
+        };
+        setTimeout(typeLoop, 500);
+
+        // Cursor blink
+        const blinkInterval = setInterval(() => showCursor = !showCursor, 530);
+
+        // Scroll fade-in
+        const fadeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const idx = sectionEls.indexOf(entry.target as HTMLElement);
+                if (entry.isIntersecting && idx !== -1) {
+                    visibleSections = new Set([...visibleSections, idx]);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        // Active nav section observer
+        const onScroll = () => {
+        const scrollY = window.scrollY + window.innerHeight * 0.3;
+        let current = navItems[0].id;
+        for (const { id } of navItems) {
+            const el = document.getElementById(id);
+            if (el && el.offsetTop <= scrollY) {
+                current = id;
+            }
+        }
+        activeSection = current;
+    };
+
+    window.addEventListener("scroll", onScroll);
+    onScroll();
+
+    setTimeout(() => {
+        sectionEls.forEach(el => el && fadeObserver.observe(el));
+    }, 100);
+
+        // Fetch repos
         try {
             const res = await fetch(`${base}/repos.json`);
             const data = await res.json();
@@ -119,33 +209,44 @@
             console.error("Failed to load projects:", error);
             loading = false;
         }
+
+        return () => {
+            clearInterval(blinkInterval);
+            fadeObserver.disconnect();
+            navObserver.disconnect();
+        };
     });
 
     const handleContact = async (e: Event) => {
-    e.preventDefault();
-    
-    const res = await fetch("https://formspree.io/f/xlgoopgk", {
+        e.preventDefault();
+        const res = await fetch("https://formspree.io/f/xlgoopgk", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                name: contactName,
-                email: contactEmail,
-                message: contactMessage,
-            }),
+            body: JSON.stringify({ name: contactName, email: contactEmail, message: contactMessage }),
         });
-
-        if (res.ok) {
-            contactSent = true;
-        } else {
-            alert("Something went wrong. Please try again.");
-        }
-    }  
+        if (res.ok) contactSent = true;
+        else alert("Something went wrong. Please try again.");
+    };
 
     const contactDetails = {
         email: "sirtv490@gmail.com",
         github: "https://github.com/TheBigZZZ",
     };
 </script>
+
+<!-- ===== FLOATING NAVBAR ===== -->
+<nav class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 rounded-full bg-neutral-900/80 backdrop-blur-md border border-neutral-700/60 shadow-xl">
+    {#each navItems as item (item.id)}
+        <button
+            onclick={() => scrollTo(item.id)}
+            class="relative px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 {activeSection === item.id ? 'text-white' : 'text-gray-400 hover:text-white'}">
+            {#if activeSection === item.id}
+                <span class="absolute inset-0 rounded-full bg-pink-500/20 border border-pink-500/40"></span>
+            {/if}
+            <span class="relative">{item.label}</span>
+        </button>
+    {/each}
+</nav>
 
 <Particles />
 
@@ -164,59 +265,87 @@
     </div>
 
     <!-- ===== HERO ===== -->
-    <section class="flex flex-col items-center gap-6 relative z-10 text-center">
-        <Avatar src="images/coolpfp-modified.webp" class="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 bg-transparent drop-shadow-2xl drop-shadow-pink-400 mb-10" />
-        <h1 class="text-white text-lg sm:text-2xl md:text-3xl font-medium max-w-2xl leading-snug">
-            Passionate front-end dev that loves making cool stuffffff!1!!!!!!1!!!
+    <section class="flex flex-col items-center gap-6 relative z-10 text-center pt-16">
+        <Avatar src="images/coolpfp-modified.webp" class="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 bg-transparent drop-shadow-2xl drop-shadow-pink-400 mb-4" />
+        <h1 class="gradient-name font-bold text-3xl sm:text-5xl md:text-6xl tracking-tight">
+            Zunayed Ibrahim
         </h1>
-        <div class="flex gap-4 mb-5">
+        <p class="text-gray-300 text-lg sm:text-xl md:text-2xl font-medium min-h-8">
+            {displayText}<span class="text-pink-400" style="opacity: {showCursor ? 1 : 0}">|</span>
+        </p>
+        <div class="flex gap-4 mt-2 mb-5">
             <a href={contactDetails.github} target="_blank" rel="noreferrer"
                class="px-5 py-2 rounded-full border border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-black transition-all text-sm font-semibold">
                 GitHub
             </a>
-            <button onclick={scrollToContact} class="px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-400 transition-all text-sm font-semibold">
-    Contact Me
+            <button onclick={scrollToContact}
+                class="px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-400 transition-all text-sm font-semibold">
+                Contact Me
             </button>
         </div>
     </section>
 
+    <!-- ===== CURRENTLY BUILDING BANNER ===== -->
+    <div class="relative z-10 w-full max-w-4xl">
+        <div class="flex items-center gap-4 px-6 py-4 rounded-2xl bg-neutral-900/80 border border-neutral-700/60 backdrop-blur-sm">
+            <span class="relative flex h-3 w-3 flex-shrink-0">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
+            </span>
+            <p class="text-gray-300 text-sm sm:text-base">
+                <span class="text-pink-400 font-semibold">Currently building</span>
+                — Flint Launcher, a fast and compact Minecraft launcher built with Tauri v2 + SvelteKit.
+            </p>
+            <a href="https://github.com/FaizeenHoque/FlintLauncher" target="_blank" rel="noreferrer"
+                class="ml-auto flex-shrink-0 text-xs text-gray-500 hover:text-pink-400 transition-colors font-medium">
+                View →
+            </a>
+        </div>
+    </div>
+
     <!-- ===== SKILLS ===== -->
-    <section class="w-full max-w-4xl relative z-10">
+    <section
+        id="skills"
+        bind:this={sectionEls[0]}
+        class="w-full max-w-4xl relative z-10 fade-section"
+        class:visible={visibleSections.has(0)}>
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">Skills</h2>
         <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-4 sm:gap-6">
             {#each skills as lang (lang.name)}
                 <div class="flex flex-col items-center gap-3 group cursor-default">
-    <div class="relative w-16 sm:w-20 h-16 sm:h-20">
-        <!-- Animated gradient border -->
-        <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 skill-border"
-            style="--skill-color: {getSkillGradient(lang.name)}">
-        </div>
-        <!-- Solid background inner -->
-        <div class="absolute inset-[2px] rounded-[14px] flex items-center justify-center bg-neutral-900">
-            <img src="{base}/{lang.image}" alt={lang.name} class="w-10 sm:w-12 h-10 sm:h-12 object-contain drop-shadow-lg" />
-        </div>
-    </div>
-    <p class="text-gray-400 group-hover:text-white transition-colors text-xs sm:text-sm text-center font-medium">{lang.name}</p>
-</div>
+                    <div class="relative w-16 sm:w-20 h-16 sm:h-20">
+                        <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 skill-border"
+                            style="--skill-color: {getSkillGradient(lang.name)}">
+                        </div>
+                        <div class="absolute inset-[2px] rounded-[14px] flex items-center justify-center bg-neutral-900">
+                            <img src="{base}/{lang.image}" alt={lang.name} class="w-10 sm:w-12 h-10 sm:h-12 object-contain drop-shadow-lg" />
+                        </div>
+                    </div>
+                    <p class="text-gray-400 group-hover:text-white transition-colors text-xs sm:text-sm text-center font-medium">{lang.name}</p>
+                </div>
             {/each}
         </div>
     </section>
 
     <!-- ===== ABOUT ME ===== -->
-    <section class="w-full max-w-4xl relative z-10">
+    <section
+        id="about"
+        bind:this={sectionEls[1]}
+        class="w-full max-w-4xl relative z-10 fade-section"
+        class:visible={visibleSections.has(1)}>
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">About Mee</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div class="flex flex-col gap-5">
                 <div class="flex items-center gap-3">
-                    <span class="text-white font-semibold text-lg"><span class="text-green-600 font-semibold">Bangladesh</span> · 16 years old</span>
+                    <span class="text-white font-semibold text-lg"><span class="text-green-500 font-semibold">Bangladesh</span> · 16 years old</span>
                 </div>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
-                    I'm probably the most enthusiastic person , chalant and joyful person you'll ever meet when it comes to Frontend, Web development, Techy stuff and other things lol.
+                    I'm probably the most enthusiastic, chalant and joyful person you'll ever meet when it comes to Frontend, Web development, Techy stuff and other things lol.
                     Big ambitions, love learning new tech, and enjoy collaborating on Cool Projects! :D
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
-                    I started out learning <span class="text-yellow-400 font-semibold">Python</span>, then took a taste for HTML, CSS and JavaScript, then switched to <span class="text-blue-400 font-semibold">Typescript</span> and <span class="text-blue-700 font-semibold">Tailwind</span>. Then dove deep into <span class="text-cyan-400 font-semibold">React</span>, <span class="text-red-400 font-semibold">Svelte</span> and Tauri.
-                    Right now I'm making a switch from React to Svelte while helping build <span class="text-pink-400 font-semibold">Flint Launcher</span> — a compact and fast Minecraft launcher built on Tauri.
+                    I started out learning <span class="text-yellow-400 font-semibold">Python</span>, then took a taste for HTML, CSS and JavaScript, then switched to <span class="text-blue-400 font-semibold">TypeScript</span> and <span class="text-cyan-400 font-semibold">Tailwind</span>. Then dove deep into <span class="text-orange-400 font-semibold">React</span>, <span class="text-red-400 font-semibold">Svelte</span> and Tauri.
+                    Right now I'm helping build <span class="text-pink-400 font-semibold">Flint Launcher</span> — a compact and fast Minecraft launcher built on Tauri.
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
                     Outside of code, I like to play Rocket League, and have a deep interest in <span class="text-white font-semibold">Islamic Topics</span> :>.
@@ -230,7 +359,7 @@
                     { label: "Years Coding", value: "Since 13" },
                 ] as stat (stat.label)}
                     <div class="bg-neutral-800/60 border border-neutral-700 rounded-xl p-5 flex flex-col items-center gap-1 hover:border-pink-400 transition-all">
-                        <span class="text-pink-400 font-bold text-3xl">{stat.value}</span>
+                        <span class="text-pink-400 font-bold text-2xl">{stat.value}</span>
                         <span class="text-gray-400 text-sm text-center">{stat.label}</span>
                     </div>
                 {/each}
@@ -239,24 +368,21 @@
     </section>
 
     <!-- ===== EXPERIENCE ===== -->
-    <section class="w-full max-w-4xl relative z-10">
+    <section
+        id="experience"
+        bind:this={sectionEls[2]}
+        class="w-full max-w-4xl relative z-10 fade-section"
+        class:visible={visibleSections.has(2)}>
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">Experience</h2>
         <div class="flex flex-col gap-5">
             {#each experiences as exp (exp.title)}
                 <div class="relative group rounded-2xl overflow-hidden border border-neutral-800 hover:border-pink-500/30 transition-all duration-500">
-                    
-                    <!-- Pink gradient background -->
                     <div class="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <!-- Subtle left accent line -->
                     <div class="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-pink-500/0 via-pink-500/60 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
                     <div class="relative flex flex-col sm:flex-row gap-6 p-6 sm:p-8 bg-neutral-900/80">
-                        <!-- Period -->
                         <div class="flex-shrink-0 sm:w-28">
                             <span class="text-xs font-semibold tracking-widest text-pink-400/70 uppercase">{exp.period}</span>
                         </div>
-
-                        <!-- Content -->
                         <div class="flex flex-col gap-3 flex-1">
                             <div class="flex flex-col gap-1">
                                 <h3 class="text-white font-bold text-xl group-hover:text-pink-50 transition-colors">{exp.title}</h3>
@@ -282,96 +408,74 @@
     </section>
 
     <!-- ===== PROJECTS ===== -->
-    <section class="w-full max-w-4xl relative z-10">
+    <section
+        id="projects"
+        bind:this={sectionEls[3]}
+        class="w-full max-w-4xl relative z-10 fade-section"
+        class:visible={visibleSections.has(3)}>
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">My Projects</h2>
-
         {#if loading}
             <div class="text-white text-center py-10 animate-pulse">Loading projects...</div>
         {:else if projects && projects.length > 0}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
                 {#each projects as project (project.id)}
-    {@const langStyle = getLanguageStyle(project.language)}
-    <a href={project.html_url} target="_blank" rel="noreferrer" class="group">
-        <div class="relative rounded-2xl overflow-hidden border border-neutral-700/60 hover:border-pink-400/60 transition-all duration-300 h-full flex flex-col bg-neutral-900/80 backdrop-blur-sm shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1">
-
-            <!-- Gradient header banner -->
-            <div class="relative h-24 w-full flex-shrink-0 overflow-hidden"
-                style="background: linear-gradient(135deg, {langStyle.bg}40 0%, {langStyle.bg}10 60%, transparent 100%)">
-                <!-- Subtle pattern overlay -->
-                <div class="absolute inset-0 opacity-10"
-                    style="background-image: radial-gradient(circle at 20% 50%, {langStyle.bg} 1px, transparent 1px), radial-gradient(circle at 80% 20%, {langStyle.bg} 1px, transparent 1px); background-size: 24px 24px;">
-                </div>
-                <!-- Language accent line -->
-                <div class="absolute bottom-0 left-0 right-0 h-0.5" style="background: linear-gradient(90deg, {langStyle.bg}, transparent)"></div>
-            </div>
-
-            <!-- Owner avatar overlapping the banner -->
-            {#if project.owner?.avatar_url}
-                <div class="absolute top-14 left-5">
-                    <img
-                        src="{project.owner.avatar_url}&s=128"
-                        alt={project.owner.login}
-                        title={project.owner.login}
-                        class="w-14 h-14 rounded-xl border-2 shadow-lg object-cover"
-                        style="border-color: {langStyle.bg};"
-                    />
-                </div>
-            {/if}
-
-            <!-- Content -->
-            <div class="flex flex-col flex-1 px-5 pt-10 pb-5 gap-3">
-                <!-- Name + stars -->
-                <div class="flex items-start justify-between gap-2">
-                    <h3 class="text-white font-bold text-lg leading-tight group-hover:text-pink-400 transition-colors">
-                        {project.name}
-                    </h3>
-                    <span class="flex items-center gap-1 text-yellow-400 text-sm font-medium flex-shrink-0">
-                        ⭐ {project.stargazers_count}
-                    </span>
-                </div>
-
-                <!-- Description -->
-                <p class="text-gray-400 text-sm leading-relaxed line-clamp-2 grow">
-                    {project.description || "No description provided."}
-                </p>
-
-                <!-- Footer -->
-                <div class="flex items-center justify-between gap-2 pt-2 border-t border-neutral-800">
-                    {#if project.language}
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold tracking-wide"
-                            style="background-color: {langStyle.bg}25; color: {langStyle.bg}; border: 1px solid {langStyle.bg}50">
-                            {project.language}
-                        </span>
-                    {:else}
-                        <span></span>
-                    {/if}
-
-                    <!-- Contributor avatars -->
-                    {#if project.contributors && project.contributors.length > 0}
-                        <div class="flex -space-x-2">
-                            {#each project.contributors.slice(0, 4) as contributor (contributor.login)}
-                                {#if contributor.avatar_url}
-                                    <img
-                                        src="{contributor.avatar_url}&s=64"
-                                        alt={contributor.login}
-                                        title={contributor.login}
-                                        class="w-7 h-7 rounded-full border-2 border-neutral-900 object-cover"
-                                    />
-                                {/if}
-                            {/each}
-                            {#if project.contributors.length > 4}
-                                <div class="w-7 h-7 rounded-full border-2 border-neutral-900 bg-neutral-700 flex items-center justify-center">
-                                    <span class="text-white text-xs">+{project.contributors.length - 4}</span>
+                    {@const langStyle = getLanguageStyle(project.language)}
+                    <a href={project.html_url} target="_blank" rel="noreferrer" class="group">
+                        <div class="relative rounded-2xl overflow-hidden border border-neutral-700/60 hover:border-pink-400/60 transition-all duration-300 h-full flex flex-col bg-neutral-900/80 backdrop-blur-sm shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1">
+                            <div class="relative h-24 w-full flex-shrink-0 overflow-hidden"
+                                style="background: linear-gradient(135deg, {langStyle.bg}40 0%, {langStyle.bg}10 60%, transparent 100%)">
+                                <div class="absolute inset-0 opacity-10"
+                                    style="background-image: radial-gradient(circle at 20% 50%, {langStyle.bg} 1px, transparent 1px), radial-gradient(circle at 80% 20%, {langStyle.bg} 1px, transparent 1px); background-size: 24px 24px;"></div>
+                                <div class="absolute bottom-0 left-0 right-0 h-0.5" style="background: linear-gradient(90deg, {langStyle.bg}, transparent)"></div>
+                            </div>
+                            {#if project.owner?.avatar_url}
+                                <div class="absolute top-14 left-5">
+                                    <img src="{project.owner.avatar_url}&s=128" alt={project.owner.login} title={project.owner.login}
+                                        class="w-14 h-14 rounded-xl border-2 shadow-lg object-cover"
+                                        style="border-color: {langStyle.bg};" />
                                 </div>
                             {/if}
+                            <div class="flex flex-col flex-1 px-5 pt-10 pb-5 gap-3">
+                                <div class="flex items-start justify-between gap-2">
+                                    <h3 class="text-white font-bold text-lg leading-tight group-hover:text-pink-400 transition-colors">
+                                        {project.name}
+                                    </h3>
+                                    <span class="flex items-center gap-1 text-yellow-400 text-sm font-medium flex-shrink-0">
+                                        ⭐ {project.stargazers_count}
+                                    </span>
+                                </div>
+                                <p class="text-gray-400 text-sm leading-relaxed line-clamp-2 grow">
+                                    {project.description || "No description provided."}
+                                </p>
+                                <div class="flex items-center justify-between gap-2 pt-2 border-t border-neutral-800">
+                                    {#if project.language}
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold tracking-wide"
+                                            style="background-color: {langStyle.bg}25; color: {langStyle.bg}; border: 1px solid {langStyle.bg}50">
+                                            {project.language}
+                                        </span>
+                                    {:else}
+                                        <span></span>
+                                    {/if}
+                                    {#if project.contributors && project.contributors.length > 0}
+                                        <div class="flex -space-x-2">
+                                            {#each project.contributors.slice(0, 4) as contributor (contributor.login)}
+                                                {#if contributor.avatar_url}
+                                                    <img src="{contributor.avatar_url}&s=64" alt={contributor.login} title={contributor.login}
+                                                        class="w-7 h-7 rounded-full border-2 border-neutral-900 object-cover" />
+                                                {/if}
+                                            {/each}
+                                            {#if project.contributors.length > 4}
+                                                <div class="w-7 h-7 rounded-full border-2 border-neutral-900 bg-neutral-700 flex items-center justify-center">
+                                                    <span class="text-white text-xs">+{project.contributors.length - 4}</span>
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    {/if}
+                                </div>
+                            </div>
                         </div>
-                    {/if}
-                </div>
-            </div>
-
-        </div>
-    </a>
-{/each}
+                    </a>
+                {/each}
             </div>
         {:else}
             <div class="text-gray-400 text-center py-10">No projects found.</div>
@@ -379,10 +483,13 @@
     </section>
 
     <!-- ===== CONTACT ===== -->
-    <section id="contact" class="w-full max-w-2xl relative z-10">
+    <section
+        id="contact"
+        bind:this={sectionEls[4]}
+        class="w-full max-w-2xl relative z-10 fade-section"
+        class:visible={visibleSections.has(4)}>
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-4">Contact Me</h2>
         <p class="text-gray-400 text-center mb-10">Say hi to me or smthinggggg</p>
-
         {#if contactSent}
             <div class="bg-pink-500/10 border border-pink-400 rounded-xl p-8 text-center">
                 <p class="text-pink-400 font-semibold text-lg">Message Sent! I rarely check emails sooo gl :D</p>
@@ -392,42 +499,22 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1">
                         <label class="text-gray-400 text-sm" for="name">Name</label>
-                        <input
-                            id="name"
-                            type="text"
-                            bind:value={contactName}
-                            placeholder="Your name"
-                            required
-                            class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors"
-                        />
+                        <input id="name" type="text" bind:value={contactName} placeholder="Your name" required
+                            class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors" />
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-gray-400 text-sm" for="email">Email</label>
-                        <input
-                            id="email"
-                            type="email"
-                            bind:value={contactEmail}
-                            placeholder="your@email.com"
-                            required
-                            class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors"
-                        />
+                        <input id="email" type="email" bind:value={contactEmail} placeholder="your@email.com" required
+                            class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors" />
                     </div>
                 </div>
                 <div class="flex flex-col gap-1">
                     <label class="text-gray-400 text-sm" for="message">Message</label>
-                    <textarea
-                        id="message"
-                        bind:value={contactMessage}
-                        placeholder="What's on your mind?"
-                        required
-                        rows="5"
-                        class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors resize-none"
-                    ></textarea>
+                    <textarea id="message" bind:value={contactMessage} placeholder="What's on your mind?" required rows="5"
+                        class="bg-neutral-900 border border-neutral-600 focus:border-pink-400 rounded-lg px-4 py-2.5 text-white text-sm outline-none transition-colors resize-none"></textarea>
                 </div>
-                <button
-                    type="submit"
-                    class="mt-2 px-6 py-3 bg-pink-500 hover:bg-pink-400 text-white font-semibold rounded-lg transition-all duration-200 self-end"
-                >
+                <button type="submit"
+                    class="mt-2 px-6 py-3 bg-pink-500 hover:bg-pink-400 text-white font-semibold rounded-lg transition-all duration-200 self-end">
                     Send Message →
                 </button>
             </form>
@@ -436,10 +523,16 @@
 
     <!-- ===== FOOTER ===== -->
     <footer class="flex flex-col items-center justify-center gap-4 w-full border-t border-neutral-800 pt-10 relative z-10">
-        <div class="flex gap-6 items-center">
-            <a href="mailto:{contactDetails.email}" class="text-gray-400 hover:text-pink-400 transition-colors text-sm">
-                📧 {contactDetails.email}
-            </a>
+        <div class="flex gap-4 items-center flex-wrap justify-center">
+            <!-- Copy email button -->
+            <button onclick={copyEmail}
+                class="flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-700 hover:border-pink-400 text-gray-400 hover:text-pink-400 transition-all text-sm">
+                {#if emailCopied}
+                    <span class="text-green-400">✓ Copied!</span>
+                {:else}
+                    📧 {contactDetails.email}
+                {/if}
+            </button>
             <a href={contactDetails.github} target="_blank" rel="noreferrer" aria-label="GitHub" class="text-gray-400 hover:text-white transition-colors">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -451,8 +544,31 @@
 
 </main>
 
-
 <style>
+    .gradient-name {
+        background: linear-gradient(90deg, #fff 0%, #f9a8d4 30%, #ec4899 50%, #f9a8d4 70%, #fff 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 4s linear infinite;
+    }
+
+    @keyframes shimmer {
+        to { background-position: 200% center; }
+    }
+
+    .fade-section {
+        opacity: 0;
+        transform: translateY(32px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .fade-section.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     @property --angle {
         syntax: "<angle>";
         inherits: false;
