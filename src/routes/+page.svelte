@@ -82,14 +82,23 @@
             role: "Frontend Developer",
             period: "2026 — Present",
             description: "Building a Minecraft launcher using Tauri v2, SvelteKit, TypeScript and Rust. Fast and Compact.",
-            tags: ["Tauri", "Svelte", "Rust", "TypeScript", "Game"],
+            tags: [
+                { name: "Tauri",      image: "images/languages/tauri.svg" },
+                { name: "Svelte",     image: "images/languages/svelte-og.svg" },
+                { name: "Rust",       image: "images/languages/rust.svg" },
+                { name: "TypeScript", image: "images/languages/typescript.svg" },
+            ],
         },
         {
             title: "CLI Monopoly",
             role: "Lead Developer",
             period: "2025 - 2026 (Discontinued)",
-            description: "Created the popular board game Monopoly, which you can play in the CLI. Discontinued for my own sake and higher persue.",
-            tags: ["Python", "Game", "CLI"],
+            description: "Created the popular board game Monopoly, which you can play in the CLI. Discontinued for my own sake and higher pursuits.",
+            tags: [
+                { name: "Python", image: "images/languages/python.svg" },
+                { name: "Game",   image: "" },
+                { name: "CLI",    image: "images/languages/cli.svg" },
+            ],
         },
     ];
 
@@ -156,11 +165,11 @@
 
     <!-- ===== HERO ===== -->
     <section class="flex flex-col items-center gap-6 relative z-10 text-center">
-        <Avatar src="images/coolpfp-modified.webp" class="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 bg-transparent drop-shadow-2xl drop-shadow-pink-400" />
+        <Avatar src="images/coolpfp-modified.webp" class="w-24 sm:w-32 md:w-40 h-24 sm:h-32 md:h-40 bg-transparent drop-shadow-2xl drop-shadow-pink-400 mb-10" />
         <h1 class="text-white text-lg sm:text-2xl md:text-3xl font-medium max-w-2xl leading-snug">
             Passionate front-end dev that loves making cool stuffffff!1!!!!!!1!!!
         </h1>
-        <div class="flex gap-4 mt-2">
+        <div class="flex gap-4 mb-5">
             <a href={contactDetails.github} target="_blank" rel="noreferrer"
                class="px-5 py-2 rounded-full border border-pink-400 text-pink-400 hover:bg-pink-400 hover:text-black transition-all text-sm font-semibold">
                 GitHub
@@ -255,10 +264,13 @@
                             </div>
                             <p class="text-gray-500 group-hover:text-gray-300 text-sm sm:text-base leading-relaxed transition-colors duration-300">{exp.description}</p>
                             <div class="flex flex-wrap gap-2 mt-1">
-                                {#each exp.tags as tag (tag)}
-                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                        style="background-color: {getLanguageStyle(tag).bg}20; color: {getLanguageStyle(tag).bg}; border: 1px solid {getLanguageStyle(tag).bg}40">
-                                        {tag}
+                                {#each exp.tags as tag (tag.name)}
+                                    <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+                                        style="background-color: {getLanguageStyle(tag.name).bg}20; color: {getLanguageStyle(tag.name).bg}; border: 1px solid {getLanguageStyle(tag.name).bg}40">
+                                        {#if tag.image}
+                                            <img src="{base}/{tag.image}" alt={tag.name} class="w-3.5 h-3.5 object-contain" />
+                                        {/if}
+                                        {tag.name}
                                     </span>
                                 {/each}
                             </div>
