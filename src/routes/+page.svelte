@@ -4,6 +4,7 @@
     import { base } from "$app/paths"
     import Particles from "$lib/components/Particles.svelte"
     import Terminal from "$lib/components/Terminal.svelte";
+    import OceanBackground from "$lib/components/OceanBackground.svelte";
 
 
     interface GitHubProject {
@@ -58,15 +59,11 @@
         { label: "Contact",    id: "contact" },
     ];
 
-    let activeSection = $state("skills");
-    let emailCopied = $state(false);
-    let showTerminal = $state(false);
-
     // Batch 4 — GitHub stats
     let githubStats = $state<GitHubStats | null>(null);
 
     // Batch 3 — tilt state per card
-    let tiltCards: Map<number, { rotateX: number; rotateY: number }> = $state(new Map());
+    let tiltCards = $state<Map<number, { rotateX: number; rotateY: number }>>(new Map());
 
     const scrollTo = (id: string) => {
         document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -296,31 +293,59 @@
         email: "sirtv490@gmail.com",
         github: "https://github.com/TheBigZZZ",
     };
+
+    let showTerminal = $state(false);
+
+    let activeSection = $state("skills");
+    let emailCopied = $state(false);
+    let navIndicatorEl: HTMLElement;
+
+    const updateNavIndicator = () => {
+        if (!navIndicatorEl) return;
+        const activeBtn = document.querySelector(`nav button:nth-child(${navItems.findIndex(n => n.id === activeSection) + 1})`) as HTMLElement;
+        if (!activeBtn) return;
+        const nav = activeBtn.closest("nav") as HTMLElement;
+        const navRect = nav.getBoundingClientRect();
+        const btnRect = activeBtn.getBoundingClientRect();
+        navIndicatorEl.style.left = `${btnRect.left - navRect.left}px`;
+        navIndicatorEl.style.top = `${btnRect.top - navRect.top}px`;
+        navIndicatorEl.style.width = `${btnRect.width}px`;
+        navIndicatorEl.style.height = `${btnRect.height}px`;
+    };
+
+    $effect(() => {
+        void activeSection;
+        setTimeout(updateNavIndicator, 10);
+    })
+
 </script>
 
 <!-- ===== FLOATING NAVBAR ===== -->
 <nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 rounded-full bg-neutral-900/80 backdrop-blur-md border border-neutral-700/60 shadow-xl w-auto max-w-[95vw]">
-    {#each navItems as item (item.id)}
+    {#each navItems as item, i (item.id)}
         <button
             onclick={() => scrollTo(item.id)}
             onmousemove={onMagneticMove}
             onmouseleave={onMagneticLeave}
-            class="relative px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap {activeSection === item.id ? 'text-white' : 'text-gray-400 hover:text-white'}">
-            {#if activeSection === item.id}
-                <span class="absolute inset-0 rounded-full bg-pink-500/20 border border-pink-500/40"></span>
-            {/if}
-            <span class="relative">{item.label}</span>
+            class="relative px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors duration-300 whitespace-nowrap z-10 {activeSection === item.id ? 'text-white' : 'text-gray-400 hover:text-white'}">
+            <span class="relative z-10">{item.label}</span>
         </button>
     {/each}
+
+    <!-- Sliding pill indicator -->
+    <div class="nav-indicator absolute rounded-full bg-pink-500/20 border border-pink-500/40 transition-all duration-300 ease-out pointer-events-none"
+        bind:this={navIndicatorEl}>
+    </div>
 </nav>
 
 <!-- Batch 3 — Animated mesh gradient background -->
 <div class="fixed inset-0 z-0 pointer-events-none mesh-bg"></div>
 
+<OceanBackground/>
 <Particles />
 <Terminal bind:showTerminal />
 
-<main class="w-full flex flex-col items-center justify-center gap-20 sm:gap-28 py-10 sm:py-16 md:py-20 px-4 sm:px-6">
+<main class="relative w-full flex flex-col items-center justify-center gap-20 sm:gap-28 py-10 sm:py-16 md:py-20 px-4 sm:px-6">
 
     <!-- Background decorative blocks -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
@@ -408,7 +433,7 @@
 
         <div class="skills-wrapper">
             <div class="skills-track">
-                {#each [...skills, ...skills, ...skills, ...skills, ...skills, ...skills, ...skills, ...skills] as lang, i (i)}
+                {#each [...skills, ...skills] as lang, i (`skill-${i}`)}
                     <div class="skill-item group">
                         <div class="relative w-16 h-16">
                             <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 skill-border"
@@ -435,14 +460,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div class="flex flex-col gap-5">
                 <div class="flex items-center gap-3">
-                    <span class="text-white font-semibold text-lg"><span class="text-green-500 font-semibold">Bangladesh</span> · 16 years old</span>
+                    <span class="text-white font-semibold text-lg"><span class="text-pink-400 font-semibold">Bangladesh</span> · 16 years old</span>
                 </div>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
                     I'm probably the most enthusiastic, chalant and joyful person you'll ever meet when it comes to Frontend, Web development, Techy stuff and other things lol.
                     Big ambitions, love learning new tech, and enjoy collaborating on Cool Projects! :D
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
-                    I started out learning <span class="text-yellow-400 font-semibold">Python</span>, then took a taste for HTML, CSS and JavaScript, then switched to <span class="text-blue-400 font-semibold">TypeScript</span> and <span class="text-cyan-400 font-semibold">Tailwind</span>. Then dove deep into <span class="text-orange-400 font-semibold">React</span>, <span class="text-red-400 font-semibold">Svelte</span> and Tauri.
+                    I started out learning <span class="text-pink-400 font-semibold">Python</span>, then took a taste for HTML, CSS and JavaScript, then switched to <span class="text-pink-400 font-semibold">TypeScript</span> and <span class="text-pink-400 font-semibold">Tailwind</span>. Then dove deep into <span class="text-pink-400 font-semibold">React</span>, <span class="text-pink-400 font-semibold">Svelte</span> and Tauri.
                     Right now I'm helping build <span class="text-pink-400 font-semibold">Flint Launcher</span> — a compact and fast Minecraft launcher built on Tauri.
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
@@ -451,18 +476,30 @@
             </div>
             <div class="grid grid-cols-2 gap-4">
                 {#each [
-                    { label: "Projects Built", value: "Just 2 :(" },
-                    { label: "Languages", value: "5+" },
-                    { label: "GitHub Stars", value: githubStats ? `⭐ ${githubStats.stars}` : "⭐" },
-                    { label: "Years Coding", value: "Since 13" },
+                    { label: "Projects Built", value: "Just 2 :(", icon: "🛠️", color: "#ec4899" },
+                    { label: "Languages",      value: "5+",        icon: "💻", color: "#a855f7" },
+                    { label: "GitHub Stars",   value: githubStats ? `${githubStats.stars}` : "⭐", icon: "⭐", color: "#f59e0b" },
+                    { label: "Years Coding",   value: "Since 13",  icon: "🚀", color: "#06b6d4" },
                 ] as stat (stat.label)}
-                    <div class="bg-neutral-800/60 border border-neutral-700 rounded-xl p-5 flex flex-col items-center gap-1 hover:border-pink-400 transition-all">
-                        <span class="text-pink-400 font-bold text-2xl">{stat.value}</span>
-                        <span class="text-gray-400 text-sm text-center">{stat.label}</span>
+                    <div class="relative group overflow-hidden rounded-2xl p-5 flex flex-col gap-2 cursor-default"
+                        style="background: linear-gradient(135deg, {stat.color}15, {stat.color}05); border: 1px solid {stat.color}25;">
+                        
+                        <!-- Glow on hover -->
+                        <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"
+                            style="background: radial-gradient(circle at 50% 0%, {stat.color}20, transparent 70%)">
+                        </div>
+
+                        <!-- Top accent line -->
+                        <div class="absolute top-0 left-0 right-0 h-[1px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                            style="background: linear-gradient(90deg, transparent, {stat.color}, transparent)">
+                        </div>
+
+                        <span class="text-2xl">{stat.icon}</span>
+                        <span class="text-white font-black text-2xl sm:text-3xl relative z-10" style="text-shadow: 0 0 20px {stat.color}60">{stat.value}</span>
+                        <span class="text-gray-500 text-xs font-medium uppercase tracking-widest relative z-10">{stat.label}</span>
                     </div>
                 {/each}
             </div>
-        </div>
     </section>
 
     <!-- ===== EXPERIENCE ===== -->
@@ -489,13 +526,17 @@
                             <p class="text-gray-500 group-hover:text-gray-300 text-sm sm:text-base leading-relaxed transition-colors duration-300">{exp.description}</p>
                             <div class="flex flex-wrap gap-2 mt-1">
                                 {#each exp.tags as tag (tag.name)}
-                                    <span class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-                                        style="background-color: {getLanguageStyle(tag.name).bg}20; color: {getLanguageStyle(tag.name).bg}; border: 1px solid {getLanguageStyle(tag.name).bg}40">
-                                        {#if tag.image}
-                                            <img src="{base}/{tag.image}" alt={tag.name} class="w-3.5 h-3.5 object-contain" />
-                                        {/if}
-                                        {tag.name}
-                                    </span>
+                                    {#if tag.image}
+                                        <div title={tag.name}
+                                            class="w-7 h-7 flex items-center justify-center rounded-lg hover:scale-110 transition-transform duration-200">
+                                            <img src="{base}/{tag.image}" alt={tag.name} class="w-5 h-5 object-contain opacity-70 hover:opacity-100 transition-opacity" />
+                                        </div>
+                                    {:else}
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                                            style="background-color: {getLanguageStyle(tag.name).bg}20; color: {getLanguageStyle(tag.name).bg}; border: 1px solid {getLanguageStyle(tag.name).bg}40">
+                                            {tag.name}
+                                        </span>
+                                    {/if}
                                 {/each}
                             </div>
                         </div>
@@ -745,5 +786,11 @@
     @keyframes marquee {
         0%   { transform: translateX(0); }
         100% { transform: translateX(calc(-1 * (5rem + 4rem) * 7)); }
+    }
+
+    .nav-indicator {
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 </style>
