@@ -19,17 +19,27 @@
     }
 
     const languageColors: Record<string, { bg: string; text: string; accent: string }> = {
-        "TypeScript": { bg: "#3178c6", text: "#fff", accent: "#3178c620" },
-        "JavaScript": { bg: "#f7df1e", text: "#000", accent: "#f7df1e20" },
-        "Python":     { bg: "#3572A5", text: "#fff", accent: "#3572A520" },
-        "Svelte":     { bg: "#ff3e00", text: "#fff", accent: "#ff3e0020" },
-        "Rust":       { bg: "#dea584", text: "#000", accent: "#dea58420" },
-        "HTML":       { bg: "#e34c26", text: "#fff", accent: "#e34c2620" },
-        "CSS":        { bg: "#563d7c", text: "#fff", accent: "#563d7c20" },
-        "Go":         { bg: "#00ADD8", text: "#fff", accent: "#00ADD820" },
-        "C++":        { bg: "#f34b7d", text: "#fff", accent: "#f34b7d20" },
-        "Shell":      { bg: "#89e051", text: "#000", accent: "#89e05120" },
-        "Lua":        { bg: "#000080", text: "#fff", accent: "#00008020" },
+        "TypeScript":    { bg: "#3178c6", text: "#fff", accent: "#3178c620" },
+        "JavaScript":    { bg: "#f7df1e", text: "#000", accent: "#f7df1e20" },
+        "Python":        { bg: "#3572A5", text: "#fff", accent: "#3572A520" },
+        "Svelte":        { bg: "#ff3e00", text: "#fff", accent: "#ff3e0020" },
+        "Rust":          { bg: "#dea584", text: "#000", accent: "#dea58420" },
+        "HTML":          { bg: "#e34c26", text: "#fff", accent: "#e34c2620" },
+        "CSS":           { bg: "#563d7c", text: "#fff", accent: "#563d7c20" },
+        "Go":            { bg: "#00ADD8", text: "#fff", accent: "#00ADD820" },
+        "C++":           { bg: "#f34b7d", text: "#fff", accent: "#f34b7d20" },
+        "Shell":         { bg: "#89e051", text: "#000", accent: "#89e05120" },
+        "Lua":           { bg: "#6c7ec6", text: "#fff", accent: "#6c7ec620" },
+        "Tauri":         { bg: "#ffc131", text: "#000", accent: "#ffc13120" },
+        "Tailwind":      { bg: "#38bdf8", text: "#000", accent: "#38bdf820" },
+        "Git":           { bg: "#f1502f", text: "#fff", accent: "#f1502f20" },
+        "Minecraft":     { bg: "#5b8a31", text: "#fff", accent: "#5b8a3120" },
+        "Server Admin":  { bg: "#a855f7", text: "#fff", accent: "#a855f720" },
+        "Fabric":        { bg: "#c4a35a", text: "#000", accent: "#c4a35a20" },
+        "Roblox Studio": { bg: "#e2231a", text: "#fff", accent: "#e2231a20" },
+        "AI":            { bg: "#06b6d4", text: "#000", accent: "#06b6d420" },
+        "Game": { bg: "#f59e0b", text: "#000", accent: "#f59e0b20" },
+        "CLI":  { bg: "#22c55e", text: "#000", accent: "#22c55e20" },
     };
 
 
@@ -71,14 +81,14 @@
             title: "Flint Launcher",
             role: "Frontend Developer",
             period: "2026 — Present",
-            description: "Building a Minecraft launcher using Tauri v2, SvelteKit, TypeScript and Rust. Handles Mojang auth, parallel downloads, auto-updater and more.",
-            tags: ["Tauri", "Svelte", "Rust", "TypeScript"],
+            description: "Building a Minecraft launcher using Tauri v2, SvelteKit, TypeScript and Rust. Fast and Compact.",
+            tags: ["Tauri", "Svelte", "Rust", "TypeScript", "Game"],
         },
         {
             title: "CLI Monopoly",
             role: "Lead Developer",
             period: "2025 - 2026 (Discontinued)",
-            description: "Created the popular board game Monopoly, which you can play in the CLI. Discontinued for my own sake and higher persue",
+            description: "Created the popular board game Monopoly, which you can play in the CLI. Discontinued for my own sake and higher persue.",
             tags: ["Python", "Game", "CLI"],
         },
     ];
@@ -102,12 +112,25 @@
         }
     });
 
-    const handleContact = (e: Event) => {
-        e.preventDefault();
-        // Opens mailto as a fallback — swap for a real API if needed
-        window.location.href = `mailto:sirtv490@gmail.com?subject=Message from ${contactName}&body=${contactMessage}%0A%0AFrom: ${contactEmail}`;
-        contactSent = true;
-    };
+    const handleContact = async (e: Event) => {
+    e.preventDefault();
+    
+    const res = await fetch("https://formspree.io/f/xlgoopgk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: contactName,
+                email: contactEmail,
+                message: contactMessage,
+            }),
+        });
+
+        if (res.ok) {
+            contactSent = true;
+        } else {
+            alert("Something went wrong. Please try again.");
+        }
+    }  
 
     const contactDetails = {
         email: "sirtv490@gmail.com",
@@ -154,20 +177,16 @@
         <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-4 sm:gap-6">
             {#each skills as lang (lang.name)}
                 <div class="flex flex-col items-center gap-3 group cursor-default">
-                    <div class="relative w-16 sm:w-20 h-16 sm:h-20 rounded-2xl"
-                        style="background: radial-gradient(circle at 30% 30%, {getSkillGradient(lang.name)}40, transparent 70%)">
-                        
-                        <!-- Spinning border layer (sits behind via z-index) -->
-                        <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0 skill-border"
-                            style="--skill-color: {getSkillGradient(lang.name)}">
-                        </div>
-
-                        <!-- Inner fill that reveals 2px border gap -->
-                        <div class="absolute inset-[2px] rounded-[14px] z-10 flex items-center justify-center"
-                            style="background: radial-gradient(circle at 30% 30%, {getSkillGradient(lang.name)}30, #0a0a0a 70%)">
-                            <img src="{base}/{lang.image}" alt={lang.name} class="w-10 sm:w-12 h-10 sm:h-12 object-contain drop-shadow-lg relative z-10" />
-                        </div>
-                    </div>
+    <div class="relative w-16 sm:w-20 h-16 sm:h-20">
+        <!-- Animated gradient border -->
+        <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 skill-border"
+            style="--skill-color: {getSkillGradient(lang.name)}">
+        </div>
+        <!-- Solid background inner -->
+        <div class="absolute inset-[2px] rounded-[14px] flex items-center justify-center bg-neutral-900">
+            <img src="{base}/{lang.image}" alt={lang.name} class="w-10 sm:w-12 h-10 sm:h-12 object-contain drop-shadow-lg" />
+        </div>
+    </div>
     <p class="text-gray-400 group-hover:text-white transition-colors text-xs sm:text-sm text-center font-medium">{lang.name}</p>
 </div>
             {/each}
@@ -187,8 +206,8 @@
                     Big ambitions, love learning new tech, and enjoy collaborating on Cool Projects! :D
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
-                    I started out learning <span class="text-yellow-400 font-semibold">Python</span>, then took a taste for HTML, CSS and JavaScript, then switched to <span class="text-blue-400 font-semibold">Typescript</span>. Then dove deep into <span class="text-cyan-400 font-semibold">React</span>, <span class="text-red-400 font-semibold">Svelte</span> and Tauri.
-                    Right now I'm making switching from React to Svelte while helping build <span class="text-pink-400 font-semibold">Flint Launcher</span> — a compact and fast Minecraft launcher built on Tauri.
+                    I started out learning <span class="text-yellow-400 font-semibold">Python</span>, then took a taste for HTML, CSS and JavaScript, then switched to <span class="text-blue-400 font-semibold">Typescript</span> and <span class="text-blue-700 font-semibold">Tailwind</span>. Then dove deep into <span class="text-cyan-400 font-semibold">React</span>, <span class="text-red-400 font-semibold">Svelte</span> and Tauri.
+                    Right now I'm making a switch from React to Svelte while helping build <span class="text-pink-400 font-semibold">Flint Launcher</span> — a compact and fast Minecraft launcher built on Tauri.
                 </p>
                 <p class="text-gray-300 text-base sm:text-lg leading-relaxed">
                     Outside of code, I like to play Rocket League, and have a deep interest in <span class="text-white font-semibold">Islamic Topics</span> :>.
@@ -213,20 +232,36 @@
     <!-- ===== EXPERIENCE ===== -->
     <section class="w-full max-w-4xl relative z-10">
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">Experience</h2>
-        <div class="flex flex-col gap-6">
+        <div class="flex flex-col gap-5">
             {#each experiences as exp (exp.title)}
-                <div class="bg-neutral-800/60 border border-neutral-700 hover:border-pink-400 transition-all rounded-xl p-6 flex flex-col sm:flex-row gap-4 sm:gap-8">
-                    <div class="flex-shrink-0 text-gray-500 text-sm sm:text-base sm:w-32 pt-1">{exp.period}</div>
-                    <div class="flex flex-col gap-2 flex-1">
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                            <h3 class="text-white font-bold text-lg">{exp.title}</h3>
-                            <span class="text-pink-400 text-sm font-medium">· {exp.role}</span>
+                <div class="relative group rounded-2xl overflow-hidden border border-neutral-800 hover:border-pink-500/30 transition-all duration-500">
+                    
+                    <!-- Pink gradient background -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <!-- Subtle left accent line -->
+                    <div class="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-pink-500/0 via-pink-500/60 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+
+                    <div class="relative flex flex-col sm:flex-row gap-6 p-6 sm:p-8 bg-neutral-900/80">
+                        <!-- Period -->
+                        <div class="flex-shrink-0 sm:w-28">
+                            <span class="text-xs font-semibold tracking-widest text-pink-400/70 uppercase">{exp.period}</span>
                         </div>
-                        <p class="text-gray-400 text-sm sm:text-base leading-relaxed">{exp.description}</p>
-                        <div class="flex flex-wrap gap-2 mt-1">
-                            {#each exp.tags as tag (tag)}
-                                <span class="px-2 py-0.5 rounded-full bg-neutral-700 text-gray-300 text-xs font-medium">{tag}</span>
-                            {/each}
+
+                        <!-- Content -->
+                        <div class="flex flex-col gap-3 flex-1">
+                            <div class="flex flex-col gap-1">
+                                <h3 class="text-white font-bold text-xl group-hover:text-pink-50 transition-colors">{exp.title}</h3>
+                                <span class="text-pink-400 text-sm font-medium tracking-wide">{exp.role}</span>
+                            </div>
+                            <p class="text-gray-500 group-hover:text-gray-300 text-sm sm:text-base leading-relaxed transition-colors duration-300">{exp.description}</p>
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                {#each exp.tags as tag (tag)}
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
+                                        style="background-color: {getLanguageStyle(tag).bg}20; color: {getLanguageStyle(tag).bg}; border: 1px solid {getLanguageStyle(tag).bg}40">
+                                        {tag}
+                                    </span>
+                                {/each}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -406,25 +441,6 @@
 
 
 <style>
-
-    :global(html) {
-            scroll-behavior: smooth;
-        }
-    .skill-border {
-        background: conic-gradient(
-            from var(--angle, 0deg),
-            var(--skill-color),
-            transparent 40%,
-            var(--skill-color) 60%,
-            transparent
-        );
-        animation: none;
-    }
-
-    .group:hover .skill-border {
-        animation: spin-border 2s linear infinite;
-    }
-
     @property --angle {
         syntax: "<angle>";
         inherits: false;
@@ -433,5 +449,19 @@
 
     @keyframes spin-border {
         to { --angle: 360deg; }
+    }
+
+    .skill-border {
+        background: conic-gradient(
+            from var(--angle),
+            var(--skill-color),
+            transparent 30%,
+            transparent 70%,
+            var(--skill-color)
+        );
+    }
+
+    .group:hover .skill-border {
+        animation: spin-border 2s linear infinite;
     }
 </style>
