@@ -3,6 +3,8 @@
     import { onMount } from "svelte"
     import { base } from "$app/paths"
     import Particles from "$lib/components/Particles.svelte"
+    import Terminal from "$lib/components/Terminal.svelte";
+
 
     interface GitHubProject {
         id: number;
@@ -58,6 +60,7 @@
 
     let activeSection = $state("skills");
     let emailCopied = $state(false);
+    let showTerminal = $state(false);
 
     // Batch 4 — GitHub stats
     let githubStats = $state<GitHubStats | null>(null);
@@ -203,8 +206,14 @@
                     phraseIndex = (phraseIndex + 1) % phrases.length;
                 }
             }
+
+
+
+            
             setTimeout(typeLoop, isDeleting ? 40 : 70);
         };
+
+
         setTimeout(typeLoop, 500);
 
         const blinkInterval = setInterval(() => showCursor = !showCursor, 530);
@@ -290,13 +299,13 @@
 </script>
 
 <!-- ===== FLOATING NAVBAR ===== -->
-<nav class="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 rounded-full bg-neutral-900/80 backdrop-blur-md border border-neutral-700/60 shadow-xl">
+<nav class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-1.5 rounded-full bg-neutral-900/80 backdrop-blur-md border border-neutral-700/60 shadow-xl w-auto max-w-[95vw]">
     {#each navItems as item (item.id)}
         <button
             onclick={() => scrollTo(item.id)}
             onmousemove={onMagneticMove}
             onmouseleave={onMagneticLeave}
-            class="relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 {activeSection === item.id ? 'text-white' : 'text-gray-400 hover:text-white'}">
+            class="relative px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap {activeSection === item.id ? 'text-white' : 'text-gray-400 hover:text-white'}">
             {#if activeSection === item.id}
                 <span class="absolute inset-0 rounded-full bg-pink-500/20 border border-pink-500/40"></span>
             {/if}
@@ -309,6 +318,7 @@
 <div class="fixed inset-0 z-0 pointer-events-none mesh-bg"></div>
 
 <Particles />
+<Terminal bind:showTerminal />
 
 <main class="w-full flex flex-col items-center justify-center gap-20 sm:gap-28 py-10 sm:py-16 md:py-20 px-4 sm:px-6">
 
@@ -343,6 +353,13 @@
                 onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
                 class="px-5 py-2 rounded-full bg-pink-500 text-white hover:bg-pink-400 transition-all text-sm font-semibold">
                 Contact Me
+            </button>
+
+            <button
+                onclick={() => showTerminal = true}
+                onmousemove={onMagneticMove} onmouseleave={onMagneticLeave}
+                class="px-5 py-2 rounded-full border border-neutral-600 text-gray-300 hover:border-pink-400 hover:text-pink-400 transition-all text-sm font-semibold font-mono">
+                ❯_ terminal
             </button>
         </div>
 
@@ -385,23 +402,26 @@
     <section
         id="skills"
         bind:this={sectionEls[0]}
-        class="w-full max-w-4xl relative z-10 fade-section"
+        class="w-full relative z-10 fade-section"
         class:visible={visibleSections.has(0)}>
         <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">Skills</h2>
-        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-4 sm:gap-6">
-            {#each skills as lang (lang.name)}
-                <div class="flex flex-col items-center gap-3 group cursor-default">
-                    <div class="relative w-16 sm:w-20 h-16 sm:h-20">
-                        <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 skill-border"
-                            style="--skill-color: {getSkillGradient(lang.name)}">
+
+        <div class="skills-wrapper">
+            <div class="skills-track">
+                {#each [...skills, ...skills, ...skills, ...skills, ...skills, ...skills, ...skills, ...skills] as lang, i (i)}
+                    <div class="skill-item group">
+                        <div class="relative w-16 h-16">
+                            <div class="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 skill-border"
+                                style="--skill-color: {getSkillGradient(lang.name)}">
+                            </div>
+                            <div class="absolute inset-[2px] rounded-[14px] flex items-center justify-center bg-neutral-900">
+                                <img src="{base}/{lang.image}" alt={lang.name} class="w-10 h-10 object-contain drop-shadow-lg" />
+                            </div>
                         </div>
-                        <div class="absolute inset-[2px] rounded-[14px] flex items-center justify-center bg-neutral-900">
-                            <img src="{base}/{lang.image}" alt={lang.name} class="w-10 sm:w-12 h-10 sm:h-12 object-contain drop-shadow-lg" />
-                        </div>
+                        <p class="text-gray-400 group-hover:text-white transition-colors text-xs text-center font-medium mt-2">{lang.name}</p>
                     </div>
-                    <p class="text-gray-400 group-hover:text-white transition-colors text-xs sm:text-sm text-center font-medium">{lang.name}</p>
-                </div>
-            {/each}
+                {/each}
+            </div>
         </div>
     </section>
 
@@ -692,5 +712,38 @@
 
     .group:hover .skill-border {
         animation: spin-border 2s linear infinite;
+    }
+
+    .skills-wrapper {
+    overflow: hidden;
+    width: 100%;
+    mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+    }
+
+    .skills-track {
+        display: flex;
+        gap: 4rem;
+        width: max-content;
+        animation: marquee 10s linear infinite;
+        will-change: transform;
+    }
+
+    .skills-track:hover {
+        animation-play-state: paused;
+    }
+
+    .skill-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        cursor: default;
+        width: 5rem;
+    }
+
+    @keyframes marquee {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(calc(-1 * (5rem + 4rem) * 7)); }
     }
 </style>
