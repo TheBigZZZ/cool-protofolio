@@ -4,6 +4,7 @@
     import Particles from "$lib/components/Particles.svelte"
     import Terminal from "$lib/components/Terminal.svelte"
     import OceanBackground from "$lib/components/OceanBackground.svelte"
+    import ExperienceSection from "$lib/components/ExperienceSection.svelte";
 
     interface GitHubProject {
         id: number;
@@ -93,6 +94,8 @@
             role: "Frontend Developer",
             period: "2026 — Present",
             description: "Building a Minecraft launcher using Tauri v2, SvelteKit, TypeScript and Rust. Fast and Compact.",
+            xp: 820, maxXp: 1000, level: 3, status: "active" as const,
+            achievement: "Ship it. Fast.",
             tags: [
                 { name: "Tauri",      image: "images/languages/tauri.svg" },
                 { name: "Svelte",     image: "images/languages/svelte-og.svg" },
@@ -105,9 +108,10 @@
             role: "Lead Developer",
             period: "2025 - 2026 (Discontinued)",
             description: "Created the popular board game Monopoly, which you can play in the CLI. Discontinued for my own sake and higher pursuits.",
+            xp: 400, maxXp: 1000, level: 2, status: "archived" as const,
+            achievement: "First full project shipped",
             tags: [
                 { name: "Python", image: "images/languages/python.svg" },
-                { name: "Game",   image: "" },
                 { name: "CLI",    image: "images/languages/cli.svg" },
             ],
         },
@@ -543,47 +547,8 @@
     </section>
 
     <!-- ===== EXPERIENCE ===== -->
-    <section
-        id="experience"
-        bind:this={sectionEls[2]}
-        class="w-full max-w-4xl relative z-10 fade-section"
-        class:visible={visibleSections.has(2)}>
-        <h2 class="text-white font-medium text-2xl sm:text-4xl md:text-5xl text-center mb-10">Experience</h2>
-        <div class="flex flex-col gap-5">
-            {#each experiences as exp (exp.title)}
-                <div class="relative group rounded-2xl overflow-hidden border border-neutral-800 hover:border-pink-500/30 transition-all duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-br from-pink-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-pink-500/0 via-pink-500/60 to-pink-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative flex flex-col sm:flex-row gap-6 p-6 sm:p-8 bg-neutral-900/80">
-                        <div class="flex-shrink-0 sm:w-28">
-                            <span class="text-xs font-semibold tracking-widest text-pink-400/70 uppercase">{exp.period}</span>
-                        </div>
-                        <div class="flex flex-col gap-3 flex-1">
-                            <div class="flex flex-col gap-1">
-                                <h3 class="text-white font-bold text-xl group-hover:text-pink-50 transition-colors">{exp.title}</h3>
-                                <span class="text-pink-400 text-sm font-medium tracking-wide">{exp.role}</span>
-                            </div>
-                            <p class="text-gray-500 group-hover:text-gray-300 text-sm sm:text-base leading-relaxed transition-colors duration-300">{exp.description}</p>
-                            <div class="flex flex-wrap gap-2 mt-1">
-                                {#each exp.tags as tag (tag.name)}
-                                    {#if tag.image}
-                                        <div title={tag.name} class="w-7 h-7 flex items-center justify-center rounded-lg hover:scale-110 transition-transform duration-200">
-                                            <img src="{base}/{tag.image}" alt={tag.name} class="w-5 h-5 object-contain opacity-70 hover:opacity-100 transition-opacity" />
-                                        </div>
-                                    {:else}
-                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold"
-                                            style="background-color: {getLanguageStyle(tag.name).bg}20; color: {getLanguageStyle(tag.name).bg}; border: 1px solid {getLanguageStyle(tag.name).bg}40">
-                                            {tag.name}
-                                        </span>
-                                    {/if}
-                                {/each}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {/each}
-        </div>
-    </section>
+    <ExperienceSection {experiences}/>
+
 
     <!-- ===== PROJECTS ===== -->
     <section
